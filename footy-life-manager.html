@@ -44,7 +44,7 @@
 </script>
 
 <div id="root">
-  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.99c — Rocker Lab: splash de estúdio na abertura + assinatura no rodapé do Menu · pack</div></div>
+  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.107 FASE A B1 estendido - TONS_POST sem dominancia. Cada tom de post/entrevista agora tem GANHO E CUSTO: (1) Confiante torcida+2 moralElenco+1 patroBoost+0.05 MAS imagem-1 (pode parecer arrogante). (2) Humilde torcida+3 moralElenco+3 patroBoost+0.02 MAS fama-1 (humildade nao constroi mito). (3) Provocativo torcida+1 patroBoost+0.10 MAS moralElenco-2 imagem-3 relacaoTecnico-1 (alto risco / alta recompensa). (4) Tecnico/serio torcida+1 moralElenco+2 patroBoost+0.03 com flag de menor engajamento. Aplicadores em postarRede e jornalista entrevista pos-jogo plugados com os campos novos (imagem fama relacaoTecnico vindo do t.efeitos). MOM_OFE/MOM_DEF e EVENTOS_MIDIA auditados - ja tem tradeoff inerente. · pack</div></div>
 </div>
 
 <script type="text/plain" id="bmsrc">
@@ -334,6 +334,407 @@ function pickEpilogo(nivel){
   const pool=EPILOGOS_CARREIRA[nivel]||EPILOGOS_CARREIRA.craque;
   return pool[Math.floor(Math.random()*pool.length)];
 }
+
+
+// === data/eventos-raiz.js ===
+// data/eventos-raiz.js — Banco de eventos da raiz (Fase B E1) — Narrativa v9.65-ns4
+// Concatenado no bmsrc pelo pack.mjs. CONST PURO — sem export.
+// 20 eventos pra validar o formato. Escalar depois.
+//
+// Filosofia: eventos da vida do moleque que constroem o personagem. Bem-humorados,
+// com escolhas que pesam de verdade. Não é manchete — é decisão do dia-a-dia.
+//
+// Estrutura declarativa (Eng converte efeitos em mutação de state):
+//   id:       chave do objeto
+//   ic:       emoji
+//   fase:     "base" | "profissional" | "qualquer" (controla quando o evento pode disparar)
+//   peso:     1..5 (frequência relativa — peso 5 dispara mais que peso 1)
+//   titulo:   curto
+//   texto:    1-3 frases narrativas (tom BR, leve humor)
+//   opcoes:   array de 2-3 escolhas, cada uma com:
+//     label:   texto do botão (curto)
+//     efeitos: objeto com qualquer combinação de:
+//       dinheiro          (delta R$)
+//       energia           (delta -100..+100 — mapear pra clima/fadiga)
+//       moral             (delta -100..+100)
+//       disciplina        (delta) [🆕]
+//       relacaoFamilia    (delta) [🆕]
+//       relacaoTecnico    (delta)
+//       imagem            (delta -100..+100)
+//       risco_lesao       (delta % — temporário, próximas 4 semanas)
+//       atributos         (objeto: {velocidade?, forca?, tecnica?, mente?, drible?} delta direto)
+//       seguidores        (delta multiplicativo, ex: 0.05 = +5%)
+//       fama              (delta)
+//       log               (string curta pro feed/log)
+//       dispara           (id de outro evento que pode vir em 1-4 semanas)
+//
+// Tokens nos textos: [NOME], [CLUBE], [MAE], [PAI] — Eng resolve antes de exibir.
+
+const EVENTOS_RAIZ={
+
+  // ============================================================
+  // 1. Rachão na rua de casa
+  // ============================================================
+  rachao_casa:{
+    ic:"⚽", fase:"base", peso:5,
+    titulo:"Rachão na rua",
+    texto:"Tio do bairro fechou time pra um rachão na rua de casa. Tem cerveja pra adulto, refri pra moleque, e gente boa. Tu tem treino amanhã cedo.",
+    opcoes:[
+      {label:"Jogo o rachão. Bola é bola.",
+        efeitos:{energia:-12, moral:+10, disciplina:-2, relacaoFamilia:+4, log:"Jogou o rachão, voltou suado e feliz."}},
+      {label:"Vou bicar de entregador. Tô precisando.",
+        efeitos:{dinheiro:+180, energia:-22, atributos:{tecnica:-1}, log:"Pegou bico de entregador, fez R$ 180."}},
+      {label:"Foco. Treino extra no quintal.",
+        efeitos:{atributos:{tecnica:+1}, energia:-8, moral:-3, disciplina:+3, log:"Recusou rachão, treinou sozinho."}},
+    ],
+  },
+
+  // ============================================================
+  // 2. Festa na véspera do jogo
+  // ============================================================
+  festa_vespera:{
+    ic:"🎉", fase:"qualquer", peso:4,
+    titulo:"Festa na véspera do jogo",
+    texto:"Aniversário de 18 anos da prima. Vai todo mundo. Amanhã é jogo decisivo do sub-20.",
+    opcoes:[
+      {label:"Vou só dar um oi e volto cedo.",
+        efeitos:{energia:-8, moral:+5, disciplina:+1, log:"Apareceu na festa, voltou cedo. Equilíbrio."}},
+      {label:"Vou e fico até o final. É família.",
+        efeitos:{energia:-25, moral:+12, disciplina:-4, atributos:{mente:-1}, log:"Curtiu até o fim. Acordou ferrado.",
+          dispara:"jogo_apagado"}},
+      {label:"Não vou. Foco no jogo.",
+        efeitos:{relacaoFamilia:-5, disciplina:+4, moral:-3, log:"Recusou festa da prima. Família ficou magoada."}},
+    ],
+  },
+
+  // ============================================================
+  // 3. Más companhias na esquina
+  // ============================================================
+  mas_companhias:{
+    ic:"😬", fase:"base", peso:3,
+    titulo:"Os mano da esquina",
+    texto:"Os caras de antes te chamaram pra dar uma volta de moto. Tu sabe quem são. Tu também sabe que o lance não é só volta de moto.",
+    opcoes:[
+      {label:"Vou. Não posso virar a cara pra origem.",
+        efeitos:{relacaoFamilia:-8, disciplina:-6, imagem:-4, log:"Foi com os mano. Mãe chorou.",
+          dispara:"abordagem_policial"}},
+      {label:"Hoje não, mano. Tô em treino.",
+        efeitos:{disciplina:+3, moral:-2, log:"Recusou educado, manteve respeito mútuo."}},
+      {label:"Corta de vez. Não te quero por perto.",
+        efeitos:{disciplina:+6, moral:-5, relacaoFamilia:+6, log:"Cortou laço com os mano. Decisão dura."}},
+    ],
+  },
+
+  // ============================================================
+  // 4. Mãe cobra despesa de casa
+  // ============================================================
+  mae_cobra_despesa:{
+    ic:"🏠", fase:"base", peso:4,
+    titulo:"[MAE] precisa de uma força",
+    texto:"Conta de luz veio salgada. [MAE] não pediu, mas tu sabe que tá apertado. Tu tem R$ 400 guardado pra comprar a chuteira nova.",
+    opcoes:[
+      {label:"Dou tudo. Mãe é mãe.",
+        efeitos:{dinheiro:-400, relacaoFamilia:+15, moral:+8, log:"Cobriu a conta. Sem chuteira nova esse mês.",
+          dispara:"chuteira_furada"}},
+      {label:"Dou metade. Divido o sufoco.",
+        efeitos:{dinheiro:-200, relacaoFamilia:+8, moral:+3, log:"Dividiu a conta com a família."}},
+      {label:"Não conto que tenho o dinheiro.",
+        efeitos:{disciplina:-3, moral:-6, log:"Fingiu que não tinha. Comprou a chuteira na sexta."}},
+    ],
+  },
+
+  // ============================================================
+  // 5. Chuteira furada
+  // ============================================================
+  chuteira_furada:{
+    ic:"👟", fase:"base", peso:3,
+    titulo:"A chuteira rasgou no treino",
+    texto:"Bicheira aberta na ponta. Treinar assim é convite pra torção.",
+    opcoes:[
+      {label:"Compro nova boa. Investe em si.",
+        efeitos:{dinheiro:-450, atributos:{tecnica:+1}, risco_lesao:-5, log:"Comprou chuteira nova. Pisada firme."}},
+      {label:"Remendo com cola e fita. Quebra galho.",
+        efeitos:{dinheiro:-15, risco_lesao:+12, log:"Remendou a chuteira. Aguenta o tranco — talvez."}},
+      {label:"Peço emprestada pro Caio do time.",
+        efeitos:{relacaoTecnico:+0, moral:-4, log:"Treinou com chuteira emprestada, dois números maior."}},
+    ],
+  },
+
+  // ============================================================
+  // 6. Falta aula pra jogar bola
+  // ============================================================
+  falta_aula:{
+    ic:"🏫", fase:"base", peso:4,
+    titulo:"Pelada do bairro ou prova de matemática",
+    texto:"Tem prova hoje na escola. Mas o pessoal do campinho marcou pelada com time de fora — chance de aparecer.",
+    opcoes:[
+      {label:"Vou jogar. Escola fica pra depois.",
+        efeitos:{atributos:{drible:+1, mente:-1}, disciplina:-3, log:"Faltou prova, brilhou na pelada.",
+          dispara:"pai_descobriu_falta"}},
+      {label:"Faço prova rápido, corro pra pelada.",
+        efeitos:{atributos:{drible:+0, mente:+0}, energia:-10, moral:+2, log:"Fez prova correndo, foi metade da pelada."}},
+      {label:"Vou na prova. Estudo vem primeiro.",
+        efeitos:{atributos:{mente:+1}, disciplina:+3, relacaoFamilia:+4, log:"Foi pra prova. Bola fica pra outro dia."}},
+    ],
+  },
+
+  // ============================================================
+  // 7. Agente picareta
+  // ============================================================
+  agente_picareta:{
+    ic:"🐍", fase:"qualquer", peso:3,
+    titulo:"Apareceu um \"empresário\"",
+    texto:"Cara apareceu no portão do CT com terno barato e proposta de assinar contrato com a agência dele. 'Promete' Europa em 6 meses. Pediu pra assinar hoje.",
+    opcoes:[
+      {label:"Assino. Quem sabe não é a chance.",
+        efeitos:{fama:+1, disciplina:-5, imagem:-6, log:"Assinou com o picareta. Vai dar dor de cabeça.",
+          dispara:"agente_picareta_cobra"}},
+      {label:"Falo que vou consultar a família primeiro.",
+        efeitos:{disciplina:+3, relacaoFamilia:+5, log:"Pediu tempo. Família vai investigar o cara."}},
+      {label:"Recuso na cara. Não me convence.",
+        efeitos:{disciplina:+5, moral:+3, log:"Mandou o picareta passear. Decisão limpa."}},
+    ],
+  },
+
+  // ============================================================
+  // 8. Convite pra time pequeno
+  // ============================================================
+  convite_time_pequeno:{
+    ic:"📩", fase:"base", peso:2,
+    titulo:"Time da Série C te quer",
+    texto:"Clube pequeno do interior te chamou: contrato profissional, minutos garantidos, mas vitrine quase zero.",
+    opcoes:[
+      {label:"Aceito. Jogar é o que importa.",
+        efeitos:{dinheiro:+2200, fama:+2, atributos:{mente:+1, tecnica:+1}, log:"Assinou pro time da Série C. Vai pro interior."}},
+      {label:"Recuso. Espero vir do grande.",
+        efeitos:{moral:-5, disciplina:+2, log:"Recusou. Continua treinando na base, esperando chance."}},
+    ],
+  },
+
+  // ============================================================
+  // 9. Briga no campo
+  // ============================================================
+  briga_campo:{
+    ic:"🥊", fase:"qualquer", peso:3,
+    titulo:"Companheiro tomou pancada",
+    texto:"Zagueiro adversário entrou pesado no Léo, teu camisa 7. Léo levantou pra bater. Pode dar pau geral.",
+    opcoes:[
+      {label:"Entro junto. Camisa é uma só.",
+        efeitos:{relacaoTecnico:-8, imagem:-5, disciplina:-4, log:"Entrou na briga. Suspensão pelo árbitro."}},
+      {label:"Seguro o Léo, evito confusão.",
+        efeitos:{relacaoTecnico:+5, disciplina:+4, moral:+3, log:"Segurou o Léo. Técnico elogiou na coletiva."}},
+      {label:"Fico de lado. Não é meu problema.",
+        efeitos:{relacaoTecnico:-3, moral:-4, log:"Ficou parado. Vestiário sentiu."}},
+    ],
+  },
+
+  // ============================================================
+  // 10. Influencer te convida pra postar
+  // ============================================================
+  influencer_convite:{
+    ic:"📱", fase:"qualquer", peso:3,
+    titulo:"Influencer marcou tu num post",
+    texto:"Influencer fitness de 800k seguidores te marcou num vídeo trending. Quer fazer parceria — só repostar 1x/semana.",
+    opcoes:[
+      {label:"Topo. Seguidor é capital.",
+        efeitos:{seguidores:+0.06, fama:+2, disciplina:-1, log:"Aceitou parceria. +seguidores."}},
+      {label:"Recuso. Não é meu mundo.",
+        efeitos:{disciplina:+2, log:"Recusou parceria. Manteve a discrição."}},
+    ],
+  },
+
+  // ============================================================
+  // 11. Vizinho cria caso com a família
+  // ============================================================
+  vizinho_briga:{
+    ic:"🗣️", fase:"base", peso:2,
+    titulo:"Vizinho gritou com [MAE]",
+    texto:"Discussão por causa de carro estacionado virou xingamento. Mãe ligou nervosa, pediu pra tu não ir lá fazer escândalo.",
+    opcoes:[
+      {label:"Vou tirar satisfação. Ninguém grita com [MAE].",
+        efeitos:{relacaoFamilia:+5, disciplina:-5, imagem:-3, log:"Foi peitar o vizinho. Quase deu BO."}},
+      {label:"Ligo pra acalmar [MAE] e fico fora.",
+        efeitos:{relacaoFamilia:+8, disciplina:+4, log:"Acalmou [MAE] por telefone. Caso esfriou."}},
+    ],
+  },
+
+  // ============================================================
+  // 12. Vakinha pra avó doente
+  // ============================================================
+  vakinha_avo:{
+    ic:"💊", fase:"qualquer", peso:3,
+    titulo:"Vó internada — falta dinheiro pro tratamento",
+    texto:"Vó precisou internar, plano não cobre tudo. Família organizou vakinha. Faltam R$ 3 mil pra fechar.",
+    opcoes:[
+      {label:"Cubro tudo eu. Vó é vó.",
+        efeitos:{dinheiro:-3000, relacaoFamilia:+25, moral:+10, imagem:+4, log:"Cobriu a conta sozinho. Família comoveu."}},
+      {label:"Dou R$ 1500, resto cada um ajuda.",
+        efeitos:{dinheiro:-1500, relacaoFamilia:+12, moral:+5, log:"Deu metade. Resto a família completa."}},
+      {label:"Não posso. Tô apertado também.",
+        efeitos:{relacaoFamilia:-15, moral:-12, log:"Não conseguiu ajudar. Família entendeu — mais ou menos."}},
+    ],
+  },
+
+  // ============================================================
+  // 13. Olheiro aparece num jogo random
+  // ============================================================
+  olheiro_random:{
+    ic:"🕵️", fase:"base", peso:4,
+    titulo:"Tem olheiro no campo hoje",
+    texto:"Boato no vestiário: um cara de boné e prancheta nas arquibancadas é olheiro de clube grande. Jogo é amistoso besta.",
+    opcoes:[
+      {label:"Capricho ao máximo. Vitrine é vitrine.",
+        efeitos:{energia:-20, atributos:{drible:+1}, fama:+1, log:"Brilhou no jogo. Olheiro anotou.",
+          dispara:"olheiro_relatorio_bom"}},
+      {label:"Jogo normal. Não vou me afobar.",
+        efeitos:{energia:-8, log:"Jogou natural. Não destacou — também não errou."}},
+    ],
+  },
+
+  // ============================================================
+  // 14. Pai quer que você foque na escola
+  // ============================================================
+  pai_escola:{
+    ic:"📚", fase:"base", peso:3,
+    titulo:"[PAI] sentou pra conversar",
+    texto:"'Filho, e se a bola não der certo? Larga essa de jogador, foca no estudo.' Discurso clássico — mas vem com amor.",
+    opcoes:[
+      {label:"Pai, deixa eu provar até dezembro.",
+        efeitos:{relacaoFamilia:+3, disciplina:+5, moral:+4, log:"Negociou prazo com [PAI]. Tem até o fim do ano."}},
+      {label:"Discuto feio. Pai não acredita em mim.",
+        efeitos:{relacaoFamilia:-15, moral:-8, log:"Brigou com [PAI]. Casa ficou pesada por semanas."}},
+      {label:"Concordo. Largo o futebol.",
+        efeitos:{moral:-20, atributos:{tecnica:-1, drible:-1}, log:"Decidiu largar. Por enquanto."}},
+    ],
+  },
+
+  // ============================================================
+  // 15. Sobrinho doente, leva pro médico
+  // ============================================================
+  sobrinho_doente:{
+    ic:"🤒", fase:"qualquer", peso:2,
+    titulo:"Sobrinho com febre alta",
+    texto:"Tua irmã ligou desesperada. Sobrinho de 4 anos com 39 de febre. Sem dinheiro pra Uber, sem carro em casa.",
+    opcoes:[
+      {label:"Largo tudo e vou levar.",
+        efeitos:{energia:-15, relacaoFamilia:+18, log:"Largou treino, levou sobrinho no pronto-socorro. Febre baixou."}},
+      {label:"Pago Uber pra ela. Tô em treino.",
+        efeitos:{dinheiro:-80, relacaoFamilia:+5, disciplina:+2, log:"Pagou Uber. Continuou no treino."}},
+    ],
+  },
+
+  // ============================================================
+  // 16. Garota nova no bairro
+  // ============================================================
+  garota_nova:{
+    ic:"💘", fase:"base", peso:3,
+    titulo:"Garota nova no bairro",
+    texto:"Apareceu uma menina nova. Te olhou. Te chamou pra tomar açaí. Tu tá em fase de subir pro profissional — concentração é tudo.",
+    opcoes:[
+      {label:"Vou no açaí. Vida é uma só.",
+        efeitos:{moral:+8, disciplina:-2, log:"Foi no açaí. Trocou número."}},
+      {label:"Convido depois do próximo jogo.",
+        efeitos:{disciplina:+3, moral:+2, log:"Adiou o açaí. Manteve foco no jogo de domingo."}},
+      {label:"Foco total. Sem distração agora.",
+        efeitos:{disciplina:+6, moral:-3, log:"Recusou o açaí. Coração apertou um pouco."}},
+    ],
+  },
+
+  // ============================================================
+  // 17. Carrinho pesado no treino
+  // ============================================================
+  peao_carrinho:{
+    ic:"🦵", fase:"qualquer", peso:3,
+    titulo:"Peão do time pegou pesado",
+    texto:"No racha do treino, o zagueirão Marcão entrou de carrinho seco em você. Sem cartão, sem desculpa. Joelho doeu.",
+    opcoes:[
+      {label:"Vou pro fisio. Não arrisco.",
+        efeitos:{energia:-5, risco_lesao:-8, log:"Foi pro fisio preventivo. Joelho aguentou."}},
+      {label:"Continuo treinando. Aguento.",
+        efeitos:{risco_lesao:+18, moral:+3, disciplina:+2, log:"Aguentou no peito. Joelho vai cobrar.",
+          dispara:"lesao_joelho_recidiva"}},
+      {label:"Vou peitar o Marcão.",
+        efeitos:{relacaoTecnico:-3, moral:+5, log:"Peitou o Marcão. Vestiário riu — mas tensionou."}},
+    ],
+  },
+
+  // ============================================================
+  // 18. Campeonato amador da igreja
+  // ============================================================
+  campeonato_igreja:{
+    ic:"⛪", fase:"base", peso:2,
+    titulo:"Time da Igreja chamou pra um torneio",
+    texto:"Tio é diácono e chamou pra fechar elenco no torneio amador da paróquia. Bolsão de R$ 500 pra cada se ganhar.",
+    opcoes:[
+      {label:"Vou. Sempre jogo bem ali, e família vai amar.",
+        efeitos:{dinheiro:+500, energia:-15, atributos:{drible:+1}, relacaoFamilia:+10, log:"Jogou pelo time da Igreja. Levou o título e R$ 500."}},
+      {label:"Recuso. Risco de lesão antes do principal.",
+        efeitos:{relacaoFamilia:-6, disciplina:+3, log:"Recusou o torneio. Tio entendeu — meio."}},
+    ],
+  },
+
+  // ============================================================
+  // 19. Golpe via DM
+  // ============================================================
+  golpe_dm:{
+    ic:"📬", fase:"qualquer", peso:2,
+    titulo:"DM de \"agência europeia\"",
+    texto:"Caiu DM no Instagram de uma 'agência de Lisboa'. Querem te ver, mandam link de cadastro. Tu tem que pagar R$ 280 de 'taxa de análise'.",
+    opcoes:[
+      {label:"Pago a taxa. Pode ser a chance.",
+        efeitos:{dinheiro:-280, imagem:-2, log:"Pagou. Golpe confirmado em 3 dias."}},
+      {label:"Mando print pro empresário antes.",
+        efeitos:{disciplina:+5, log:"Consultou alguém de confiança. Era golpe — escapou."}},
+      {label:"Exponho nos stories.",
+        efeitos:{seguidores:+0.04, imagem:+3, fama:+1, log:"Expôs o golpe nos stories. Galera elogiou postura."}},
+    ],
+  },
+
+  // ============================================================
+  // 20. Amigo oferece droga
+  // ============================================================
+  drogas_amigo:{
+    ic:"🚫", fase:"qualquer", peso:2,
+    titulo:"Oferta pesada em festa",
+    texto:"Amigo de longa data se aproximou na festa com lance pesado na mão. 'Só hoje, só pra relaxar.' Tu sabe o que vai dar.",
+    opcoes:[
+      {label:"Pego. Só hoje, ninguém vê.",
+        efeitos:{disciplina:-15, energia:-25, imagem:-8, risco_lesao:+10, log:"Aceitou. Vai cobrar caro mais pra frente.",
+          dispara:"droga_cobranca"}},
+      {label:"Recuso firme e saio da festa.",
+        efeitos:{disciplina:+10, moral:+4, log:"Recusou e foi embora. Decisão certa."}},
+      {label:"Recuso e converso com ele.",
+        efeitos:{disciplina:+8, relacaoFamilia:+3, moral:+6, log:"Recusou e tentou ajudar o amigo. Maturidade."}},
+    ],
+  },
+
+};
+
+// ============================================================
+// Helpers (Eng pode substituir por implementação própria)
+// ============================================================
+
+// Sorteia um evento elegível pra fase do jogador, respeitando pesos.
+function pickEventoRaiz(fase){
+  const eligiveis=Object.entries(EVENTOS_RAIZ).filter(([_,e])=>e.fase==="qualquer"||e.fase===fase);
+  if(!eligiveis.length)return null;
+  const totalPeso=eligiveis.reduce((s,[_,e])=>s+(e.peso||1),0);
+  let r=Math.random()*totalPeso;
+  for(const[id,e]of eligiveis){
+    r-=(e.peso||1);
+    if(r<=0)return {id,...e};
+  }
+  return {id:eligiveis[0][0],...eligiveis[0][1]};
+}
+
+// Retorna evento por ID (útil quando outro evento dispara um seguinte).
+function getEventoRaiz(id){
+  if(!EVENTOS_RAIZ[id])return null;
+  return {id,...EVENTOS_RAIZ[id]};
+}
+
+// Lista todos os IDs (útil pra debug ou pra Eng iterar).
+function listEventosRaiz(){return Object.keys(EVENTOS_RAIZ);}
 
 
 // === data/eventos.js ===
@@ -2990,7 +3391,7 @@ const SERIE_FORCA=(()=>{const o={};Object.values(SERIES_BR).forEach(arr=>arr.for
 const estruturaDeForca=f=>f>=84?5:f>=76?4:f>=66?3:f>=56?2:1;
 const estruturaV=v=>v.estruturaClube||estruturaDeForca(v.clubeForca||60);
 const TODOS_CLUBES_BR=Object.values(SERIES_BR).flat().map(([nome,forca])=>({nome,forca}));
-const ESTADOS=["GO","SP","RJ","MG","RS","BA","PR","SC","PE","CE"];
+const ESTADOS=["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"]; // FASE A M2: 26 estados + DF
 const TREINOS_V={
   finalizacao:{nome:"Finalização",icon:"🎯",d:"+Finalização · +Velocidade",prim:"fin",sec:"rit",tipo:"atr"},
   passe:{nome:"Passe & Visão",icon:"🅰️",d:"+Passe · +Finalização",prim:"pas",sec:"fin",tipo:"atr"},
@@ -2999,15 +3400,17 @@ const TREINOS_V={
   fisico:{nome:"Físico",icon:"💪",d:"+Físico · +Velocidade · resiste a lesão",prim:"fis",sec:"rit",tipo:"atr"},
   descanso:{nome:"Descanso",icon:"😴",d:"Recupera energia e moral",tipo:"cond"},
   estudos:{nome:"Estudo & Tática",icon:"🧠",d:"+Inteligência de jogo (mental) · formação de treinador · menos lesões",tipo:"estudo"},
-  social:{nome:"Marketing",icon:"📣",d:"+Reputação · +Moral · patrocínios",tipo:"cond"},
+  social:{nome:"Marketing",icon:"📣",d:"+Reputação · +grana de publi MAS gera PRESSÃO do hype (cobra na nota) e risco de polêmica",tipo:"cond"},
 };
 const INTENS={leve:{nome:"Leve",g:0.6,e:3},normal:{nome:"Normal",g:1,e:7},pesado:{nome:"Pesado",g:1.5,e:12}};
 const DIFIC={
-  facil:{nome:"Fácil",ic:"🟢",cor:"#22c55e",treino:1.25,declinio:0.78,economia:1.25,d:"Evolui mais rápido, declina devagar e sobra dinheiro. Pra curtir a história sem sufoco."},
-  normal:{nome:"Normal",ic:"🟡",cor:"#eab308",treino:1,declinio:1,economia:1,d:"A experiência equilibrada, do jeito que foi pensada."},
-  dificil:{nome:"Difícil",ic:"🔴",cor:"#ef6b6b",treino:0.8,declinio:1.28,economia:0.8,d:"Evolui devagar, o corpo cobra cedo e o dinheiro é curto. Cada decisão pesa."},
+  facil:{nome:"Fácil",apelido:"Pelada de domingo",ic:"🟢",cor:"#22c55e",treino:1.25,declinio:0.78,economia:1.25,sev:0.5,d:"Evolui mais rápido, declina devagar e sobra dinheiro. Pra curtir a história sem sufoco."},
+  normal:{nome:"Normal",apelido:"Base de verdade",ic:"🟡",cor:"#eab308",treino:1,declinio:1,economia:1,sev:1.0,d:"A experiência equilibrada, do jeito que foi pensada."},
+  dificil:{nome:"Difícil",apelido:"Sonho ou nada",ic:"🔴",cor:"#ef6b6b",treino:0.8,declinio:1.28,economia:0.8,sev:1.8,d:"Evolui devagar, o corpo cobra cedo, dinheiro curto e cada erro pune. Uma sequência de decisões ruins pode te tirar do futebol."},
 };
 const dificV=v=>DIFIC[(v&&v.dificuldade)||"normal"]||DIFIC.normal;
+// FASE A B3: multiplicador-mestre de severidade. Use em pontos de penalidade pra escalar com a dificuldade.
+const sevV=v=>dificV(v).sev||1;
 const ATTR_ROLE={rit:"Velocidade e arrancada",fin:"Gols e finalização",pas:"Criação, passe e visão",def:"Marcação e desarme",fis:"Força, fôlego e resistência a lesão"};
 const FOCO_MIGR={tecnico:"finalizacao",tatico:"defesa",fisico:"fisico",descanso:"descanso",social:"social",estudos:"estudos"};
 const MACRO_FOCO={rit:"velocidade",fin:"finalizacao",pas:"passe",def:"defesa",fis:"fisico"};
@@ -3373,10 +3776,11 @@ function aplicarEventoMidia(v,ev){
 
 // === FEATURE J3: Redes sociais ===
 const TONS_POST={
-  confiante:{nome:"Confiante",ic:"🔥",cor:"#FFD400",efeitos:{torcida:+2,moralElenco:+1,patroBoost:+0.05}},
-  humilde:{nome:"Pé no chão",ic:"🙏",cor:"#22c55e",efeitos:{torcida:+3,moralElenco:+3,patroBoost:+0.02}},
-  provocativo:{nome:"Provocativo",ic:"😤",cor:"#fb7185",efeitos:{torcida:+1,moralElenco:-2,patroBoost:+0.10}},
-  tecnico:{nome:"Técnico/sério",ic:"📋",cor:"#7fbfff",efeitos:{torcida:+1,moralElenco:+2,patroBoost:+0.03}},
+  // FASE A B1: cada tom tem CUSTO + GANHO, sem dominancia
+  confiante:{nome:"Confiante",ic:"🔥",cor:"#FFD400",efeitos:{torcida:+2,moralElenco:+1,patroBoost:+0.05,imagem:-1}}, // pode parecer arrogante (-imagem leve)
+  humilde:{nome:"Pé no chão",ic:"🙏",cor:"#22c55e",efeitos:{torcida:+3,moralElenco:+3,patroBoost:+0.02,fama:-1}}, // ganho ja existe mas reputacao nao cresce ("humildade demais nao constroi mito")
+  provocativo:{nome:"Provocativo",ic:"😤",cor:"#fb7185",efeitos:{torcida:+1,moralElenco:-2,patroBoost:+0.10,imagem:-3,relacaoTecnico:-1}}, // alto patroBoost mas custos reais
+  tecnico:{nome:"Técnico/sério",ic:"📋",cor:"#7fbfff",efeitos:{torcida:+1,moralElenco:+2,patroBoost:+0.03,torcida2Engaj:-0.02}}, // entediante pra engajamento (custo leve via flag)
 };
 function nivelInfluencer(seguidores){
   if(seguidores>=50000000)return {t:"Mega-influencer",c:"#FFD400",emoji:"🌟"};
@@ -3572,6 +3976,40 @@ function novaVidaVet(nome,estado,altura,pe,posPref,dificuldade){
 }
 function youthFactorV(idade,tipo){const base=idade<=15?1.7:idade<=17?1.42:idade<=19?1.22:idade<=21?1.02:idade<=23?0.82:idade<=25?0.62:idade<=27?0.44:idade<=29?0.28:idade<=31?0.16:0.08;if(tipo==="precoce")return idade<=19?base*1.28:base*0.82;if(tipo==="tardio")return idade<=18?base*0.78:(idade<=28?base*1.32:base);return base;}
 function declStartV(tipo){return tipo==="precoce"?29:tipo==="tardio"?33:31;}
+// FASE B E1: helpers de EVENTOS_RAIZ
+function aplicarEfeitosRaiz(v,efeitos,sev){
+  if(!efeitos)return v;
+  const _sev=sev||1;
+  const _neg=x=>x<0?Math.round(x*_sev):x; // negativos escalam com dificuldade
+  if(efeitos.dinheiro!=null)v.dinheiro=(v.dinheiro||0)+_neg(efeitos.dinheiro);
+  if(efeitos.energia!=null)v.energia=clamp((v.energia||0)+_neg(efeitos.energia),0,100);
+  if(efeitos.moral!=null)v.moral=clamp((v.moral||0)+_neg(efeitos.moral),0,100);
+  if(efeitos.disciplina!=null)v.disciplina=clamp((v.disciplina||50)+_neg(efeitos.disciplina),0,100);
+  if(efeitos.relacaoFamilia!=null)v.relacaoFamilia=clamp((v.relacaoFamilia||60)+_neg(efeitos.relacaoFamilia),0,100);
+  if(efeitos.relacaoTecnico!=null)v.relacaoTecnico=clamp((v.relacaoTecnico||60)+_neg(efeitos.relacaoTecnico),0,100);
+  if(efeitos.imagem!=null)v.imagem=clamp((v.imagem||50)+_neg(efeitos.imagem),0,100);
+  if(efeitos.fama!=null)v.reputacao=clamp((v.reputacao||0)+_neg(efeitos.fama),0,100);
+  if(efeitos.seguidores!=null)v.seguidores=Math.max(0,Math.round((v.seguidores||30000)*(1+(efeitos.seguidores))));
+  if(efeitos.risco_lesao!=null){v.riscoLesaoTemp={pct:(v.riscoLesaoTemp&&v.riscoLesaoTemp.pct||0)+efeitos.risco_lesao*_sev,semRestantes:4};}
+  if(efeitos.atributos){const mapAt={velocidade:"rit",forca:"fis",tecnica:"fin",mente:"pas",drible:"rit"};const sub={...(v.sub||{})};Object.entries(efeitos.atributos).forEach(([k,d])=>{const ak=mapAt[k];if(!ak)return;v.at[ak]=clamp((v.at[ak]||60)+_neg(d),20,99);});v.sub=sub;}
+  if(efeitos.log)v.log=[...(v.log||[]),{m:efeitos.log,cat:"raiz"}];
+  if(efeitos.dispara)v.eventoRaizPendente={id:efeitos.dispara,em:rnd(1,4)+v.semana};
+  return v;
+}
+function sortearEventoRaiz(v){
+  if(typeof EVENTOS_RAIZ==="undefined")return null;
+  const faseAtual=v.fase==="base"?"base":(v.fase==="profissional"?"profissional":null);
+  const candidatos=Object.entries(EVENTOS_RAIZ).filter(([id,e])=>{
+    if(id===v.ultimoEventoRaiz)return false;
+    if(e.fase==="qualquer")return true;
+    return e.fase===faseAtual;
+  });
+  if(!candidatos.length)return null;
+  const totalPeso=candidatos.reduce((s,[,e])=>s+(e.peso||1),0);
+  let r=Math.random()*totalPeso;
+  for(const [id,e] of candidatos){r-=(e.peso||1);if(r<=0)return {id,...e};}
+  const [id,e]=candidatos[candidatos.length-1];return {id,...e};
+}
 function aplicarFocoV(vida){
   const v={...vida,at:{...vida.at},sub:{...(vida.sub||{})}};const yf=youthFactorV(v.idade,v.tipoDes);const t=TREINOS_V[v.foco]||TREINOS_V.fisico;const ganhos={};
   const dev=v.talentoDev||1;const eF=v.energia>=25?clamp(0.4+v.energia*0.006,0.4,1):v.energia*0.016;const tanque=(v.at.fis||50)>=85;
@@ -3607,12 +4045,47 @@ function aplicarFocoV(vida){
       if(enf){growSub(enf,1.5);fs.subs.filter(k=>k!==enf).forEach(k=>growSub(k,0.7));(MACRO_SUBS[fs.sec]||[]).forEach(k=>growSub(k,0.4));fs.mental.forEach(k=>growSub(k,0.3));}
       else{fs.subs.forEach(k=>growSub(k,1.0));(MACRO_SUBS[fs.sec]||[]).forEach(k=>growSub(k,0.5));fs.mental.forEach(k=>growSub(k,0.4));}}
     let custo=v.foco==="fisico"?Math.round(iF.e*0.6):iF.e;if(tanque)custo=Math.round(custo*0.85);v.energia=clamp(v.energia-custo+(v.foco==="fisico"?2:0),0,100);
-    if(v.energia<18&&v.intensidade!=="leve")v.moral=clamp(v.moral-2,0,100);
+    if(v.energia<18&&v.intensidade!=="leve")v.moral=clamp(v.moral-Math.round(2*(dificV(v).sev||1)),0,100);
     if(seguindoPlano)v.sinergia=clamp((v.sinergia||50)+0.5,0,100);
     recalcMacros(v);return {vida:v,ganhos,estirao,ritmo:streak,plano:seguindoPlano};
   }
-  else if(v.foco==="descanso"){v.energia=clamp(v.energia+22,0,100);v.moral=clamp(v.moral+5,0,100);}
-  else if(v.foco==="social"){v.moral=clamp(v.moral+8,0,100);v.energia=clamp(v.energia-6,0,100);const rg=+(1.2+Math.random()*2).toFixed(1);v.reputacao=clamp(v.reputacao+rg,0,100);if(v.fase==="profissional"&&Math.random()<0.4){const grana=Math.round(15000+v.reputacao*v.reputacao*60);v.dinheiro+=grana;v.log=[...v.log,{m:`📣 Ação de marketing rendeu ${fmtDin(grana)}.`}];}}
+  else if(v.foco==="descanso"){
+    v.energia=clamp(v.energia+22,0,100);v.moral=clamp(v.moral+5,0,100);
+    // FASE A B6: descansar com energia cheia/quase = treino ignorado. Tecnico e clube notam.
+    const _energiaAntes=vida&&vida.energia!=null?vida.energia:v.energia;
+    if(_energiaAntes>=70&&v.fase!=="peneira"){
+      v.relacaoTecnico=clamp((v.relacaoTecnico||60)-rnd(1,3),0,100);
+      v.disciplina=clamp((v.disciplina||50)-rnd(1,2),0,100);
+      v.semSemTreino=(v.semSemTreino||0)+1;
+    } else v.semSemTreino=0;
+  }
+  else if(v.foco==="social"){
+    // FASE A Q1 (Marketing como alavanca real, escalado por sev): ganho de grana/hype + custo de pressao e risco de polemica
+    const _sev=dificV(v).sev||1;
+    const escalaGanho=2-_sev; // facil 1.5x, normal 1x, dificil 0.7x
+    v.moral=clamp(v.moral+Math.round(6*escalaGanho),0,100);v.energia=clamp(v.energia-6,0,100);
+    const rg=+((1.2+Math.random()*2)*escalaGanho).toFixed(1);v.reputacao=clamp(v.reputacao+rg,0,100);
+    v.imagem=clamp((v.imagem||50)+Math.round(rnd(1,3)*escalaGanho),0,100);
+    if(v.fase==="profissional"){
+      // Cache de publi: escala com reputacao^2 e bate em sev
+      if(Math.random()<0.5){const grana=Math.round((15000+v.reputacao*v.reputacao*70)*escalaGanho);v.dinheiro+=grana;v.log=[...v.log,{m:`📣 Cachê de publi: ${fmtDin(grana)}.`,cat:"midia"}];}
+      // PRESSAO/HYPE: marketing exige resposta em campo. Acumula pressaoHype que pesa na proxima partida.
+      const dHype=Math.round(rnd(7,14)*_sev);
+      v.pressaoHype=clamp((v.pressaoHype||0)+dHype,0,100);
+      // RISCO DE POLEMICA: escala com sev. No Dificil dispara mais.
+      const pPolemica=clamp(0.045*_sev+(v.pressaoHype||0)*0.0008,0,0.20);
+      if(Math.random()<pPolemica){
+        const perdaImg=Math.round(rnd(5,11)*_sev);
+        v.imagem=clamp((v.imagem||50)-perdaImg,0,100);
+        v.relacaoClube=clamp((v.relacaoClube||60)-rnd(2,4),0,100);
+        v.log=[...v.log,{m:`📰 Exposicao demais virou polemica — imagem -${perdaImg}, clube cobrou compostura.`,cat:"midia"}];
+      } else {
+        v.log=[...v.log,{m:`📣 Marketing rendeu hype (+${dHype} pressao). A torcida vai cobrar mais no campo.`,cat:"midia"}];
+      }
+      // Patrocinio extra: chance de oferta nova proporcional a reputacao e nao-pressao
+      if(elegivelMarcaInfluencer&&typeof elegivelMarcaInfluencer==="function"&&elegivelMarcaInfluencer(v)&&Math.random()<0.10*escalaGanho){const ofI=gerarPatrocinioInfluencer(v);if(ofI)v.log=[...v.log,{m:`✨ Marca de olho — uma proposta apareceu na sua caixa.`,cat:"midia"}];}
+    }
+  }
   else if(v.foco==="estudos"){v.formacaoTecnico=clamp((v.formacaoTecnico||0)+rnd(1,2)+(v.idade>=26?1:0),0,100);v.moral=clamp(v.moral+2,0,100);v.energia=clamp(v.energia-3,0,100);if(Math.random()<0.35){const k=pick(["decisoes","posicionamento","visao","compostura"]);if(v.sub[k]!=null){v.sub[k]=clamp(+(v.sub[k]+0.6).toFixed(2),1,20);ganhos[k]=+((ganhos[k]||0)+0.6).toFixed(2);}}}
   if(v.relacao)v.moral=clamp(v.moral+1,0,100);
   recalcMacros(v);return {vida:v,ganhos,ritmo:streak,plano:seguindoPlano};
@@ -3629,11 +4102,13 @@ function chanceLesaoV(v){
   if(v.at.fis>=85)c*=0.85;
   c*=(v.fragil||1);if((v.staff||[]).includes("prepfis"))c*=0.78;
   if(v.foco==="descanso")c*=0.2;else if(v.foco==="estudos")c*=0.5;
+  if(v.riscoLesaoTemp&&v.riscoLesaoTemp.pct)c+=v.riscoLesaoTemp.pct/100; // FASE B E1: risco_lesao temporario dos eventos raiz
+  c*=(dificV(v).sev||1); // FASE A B3: dificuldade escala risco de lesao
   return clamp(c,0.003,0.2);
 }
 function nivelRisco(c){const pct=clamp(Math.round(c/0.2*100),3,100);if(c<0.045)return{txt:"Baixo",cor:"#34d671",pct};if(c<0.085)return{txt:"Moderado",cor:"#eab308",pct};if(c<0.14)return{txt:"Alto",cor:"#f97316",pct};return{txt:"Muito alto",cor:"#ef4444",pct};}
 const NARR_LESAO=["Voce cai no gramado segurando a parte de tras da coxa.","Dividida dura e voce fica caido, com dores.","Pisada em falso — o joelho trava e voce pede pra sair.","Voce forca a arrancada e algo estala. Nao da pra seguir.","Choque feio e voce sai mancando, sem condicoes de continuar."];
-function dispararLesao(v){let moralD=-4;const sub={...(v.sub||{})};
+function dispararLesao(v){const _sev=dificV(v).sev||1;let moralD=Math.round(-4*_sev);const sub={...(v.sub||{})};
   const baixaSub=(macro,amt)=>{const ks=(MACRO_SUBS[macro]||[]).filter(k=>sub[k]!=null);if(!ks.length)return;const k=pick(ks);sub[k]=clamp(+(sub[k]-amt).toFixed(2),1,20);};
   // B7: sortear tipo direto da paleta de 9 lesoes (paridade real)
   const detTipo=sortearTipoLesao(v.idade||25,"partida");
@@ -3658,10 +4133,12 @@ function simularPartidaV(vida,rod,bonus,solo){
   // B5: bonus de versatilidade reduzido de 7% pra 3% por pos extra (max +9%)
   const versBonus=Math.min((vida.posicoes?vida.posicoes.length:1)-1,3)*0.03;
   const men=vida.men!=null?vida.men:55;const menNota=clamp((men-55)*0.006,-0.18,0.28);
+  // FASE A Q1: pressao do hype cobra na nota (-0.0 a -0.30 conforme pressaoHype)
+  const _hypeNota=-clamp((vida.pressaoHype||0)*0.003,0,0.30);
   const energiaF=0.7+vida.energia*0.003,moralF=0.8+vida.moral*0.0026;
   const advBase=rod?rod.forca:vida.clubeForca;const mando=rod?(rod.casa?-4:4):0;
   const adv=clamp(advBase+mando+rnd(-6,6),40,96);const _sp=0.9;const _dec=(ocV(vida,"decisivo")-50)*(adv>=base+4?0.006:0.0012);
-  let nota=clamp(6+(base*energiaF*moralF-adv)*0.07+bonusTraco(vida,posJogo)+(vida.formacaoTecnico||0)*0.004+((vida.sinergia||50)-50)*0.012+(vida.faixa==="absoluto"?0.4:vida.faixa==="capitao"?0.25:vida.faixa==="vice"?0.12:0)+(((vida.clima||60)-60)*0.005)+versBonus+menNota+(Math.random()*_sp-_sp/2)+_dec,2,10);
+  let nota=clamp(6+(base*energiaF*moralF-adv)*0.07+bonusTraco(vida,posJogo)+(vida.formacaoTecnico||0)*0.004+((vida.sinergia||50)-50)*0.012+(vida.faixa==="absoluto"?0.4:vida.faixa==="capitao"?0.25:vida.faixa==="vice"?0.12:0)+(((vida.clima||60)-60)*0.005)+versBonus+menNota+_hypeNota+(Math.random()*_sp-_sp/2)+_dec,2,10);
   let gols=0,assist=0;
   if(!solo){
     const finSk=skillV(vida,["finalizacao","compostura","semBola"]),plaSk=skillV(vida,["passe","visao","decisoes"]);
@@ -3797,7 +4274,7 @@ function entrarBaseV(vida,nome,forca,pacote){
   const base={...vida,fase:"base",clube:nome,clubeForca:forca,tier:serieA?"serieA":"base",categoria:cat,salarioMes:bolsa,dinheiro:(vida.dinheiro||0)+(luvas||0),sinergia:pacote?pacote.sinBase:32,anosNoClube:0,capitao:false,faixa:"nenhum",clima:55,elenco:gerarVestiario(forca),torcida:48,reputacao:clamp(vida.reputacao+(pacote?pacote.repBonus:5),0,100),talentoDev:clamp((vida.talentoDev||1)*(1+(pacote?pacote.dev:0)),0.8,1.4),moradia:aloj?"quarto":(vida.moradia||"familia"),log:[...vida.log,{m:msg}]};
   base.rival=rivalDe(base);base.calendario=gerarCalendarioV(base);base.artilharia=gerarArtilhariaV(base);base.liga=gerarLigaV(base);base.elenco=gerarElencoBase(base.categoria,base.ovr);base.moradia=aloj?"alojamento":(vida.moradia||"familia");base.alojCT=!!aloj;base.escolaCT=!!escola;return base;
 }
-const VERSAO="v9.99c — Rocker Lab: splash de estúdio na abertura + assinatura no rodapé do Menu";
+const VERSAO="v9.107 FASE A B1 estendido - TONS_POST sem dominancia. Cada tom de post/entrevista agora tem GANHO E CUSTO: (1) Confiante torcida+2 moralElenco+1 patroBoost+0.05 MAS imagem-1 (pode parecer arrogante). (2) Humilde torcida+3 moralElenco+3 patroBoost+0.02 MAS fama-1 (humildade nao constroi mito). (3) Provocativo torcida+1 patroBoost+0.10 MAS moralElenco-2 imagem-3 relacaoTecnico-1 (alto risco / alta recompensa). (4) Tecnico/serio torcida+1 moralElenco+2 patroBoost+0.03 com flag de menor engajamento. Aplicadores em postarRede e jornalista entrevista pos-jogo plugados com os campos novos (imagem fama relacaoTecnico vindo do t.efeitos). MOM_OFE/MOM_DEF e EVENTOS_MIDIA auditados - ja tem tradeoff inerente.";
 
 /* ===== IMPRENSA FICTÍCIA ===== */
 // Sistema de manchetes movido para data/manchetes.js (Sprint 4.5)
@@ -4148,13 +4625,14 @@ function avaliarPeneiraV(v,tentativas){
   const exp=Math.min(tentativas*2,6),ageLen=v.idade>=15?0:(15-v.idade)*2;
   for(let i=0;i<etapasDef.length;i++){
     const e=etapasDef[i];
-    const raw=clamp(Math.round(med(e.attrs)+v.potencial*0.20+exp+ageLen+rnd(-11,11)),0,100);
+    // FASE A B4 (honesta): atributos pesam mais, potencial empurra menos, azar tem menos cara de salvador
+    const raw=clamp(Math.round(med(e.attrs)+v.potencial*0.08+exp+ageLen+rnd(-7,7)),0,100);
     const passou=raw>=e.bar;etapas.push({nome:e.nome,icon:e.icon,score:raw,bar:e.bar,passou});
     soma+=raw;n++;if(!passou){cortadoEm=i;break;}
   }
   let impressao;
   if(cortadoEm!=null)impressao=clamp(Math.round((soma/n)*0.5-(2-cortadoEm)*6),0,42);
-  else impressao=clamp(Math.round((soma/3)*0.55+v.potencial*0.25+rnd(-6,6)),0,100);
+  else impressao=clamp(Math.round((soma/3)*0.62+v.potencial*0.10+rnd(-4,4)),0,100); // FASE A B4: atributo manda, potencial soma menos
   const bigs=TEAMS.filter(t=>t.s>=80),mids=TEAMS.filter(t=>t.s>=70&&t.s<80);
   const peq=()=>{const p=pick(VIDA_PEQ);return {nome:p[0],forca:p[1]};};const mk=t=>({nome:t.name,forca:t.s});
   let clubes=[];
@@ -4174,10 +4652,15 @@ function relatorioOlheiroV(v,impressao){
   const e=estimativaPot(v);const _rev=clamp(v.potRevelado||0,0,100);const _ctr=(e.min+e.max)/2;const _band=Math.round(4+(100-_rev)/100*6);const _lo=clamp(_ctr-_band,40,99),_hi=clamp(_ctr+_band,40,99);const star=x=>clamp(r2((x-46)/10.4),0.5,5);
   const paMin=clamp(star(_lo),Math.max(ca,0.5),5),paMax=clamp(star(_hi),Math.max(ca,0.5),5);
   const pa=clamp(star(_ctr),Math.max(ca,0.5),5),paPrecise=e.exato||(paMax-paMin)<0.75;const mid=_ctr;
-  const paLabel=mid>=86?"pode chegar ao topo mundial":mid>=78?"grande promessa":mid>=70?"promissor":mid>=60?"pode vingar com trabalho":"projeto de longo prazo";
+  // FASE A B2 (olheiro honesto): paLabel reflete tambem o desempenho REAL — se ca baixa E impressao baixa, sem bajulacao
+  let paLabel=mid>=86?"pode chegar ao topo mundial":mid>=78?"grande promessa":mid>=70?"promissor":mid>=60?"pode vingar com trabalho":"projeto de longo prazo";
+  if(ca<=2&&impressao<40)paLabel="vai precisar focar muito pra virar profissional";
+  else if(ca<=2.5&&impressao<32)paLabel="talvez nao seja a hora — o futebol cobra atributos";
+  else if(impressao<25)paLabel="mostrou pouco — desempenho atual nao convenceu";
   const ATL={rit:"Velocidade",fin:"Finalização",pas:"Passe",def:"Marcação",fis:"Físico"};
   const destaques=Object.entries(v.at).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([k])=>ATL[k]);
-  const verdict=impressao>=82?`Cravaram: é fenômeno. Para os olheiros, ${paLabel}.`:impressao>=66?`Chamou muita atenção em campo. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=50?`Deixou boa impressão. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=38?`Mostrou lampejos, ainda irregular. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:`Saiu cru desta vez. No papel, ${paLabel}.`;
+  // Veredito mais honesto e com humor raiz quando vai mal
+  const verdict=impressao>=82?`Cravaram: é fenômeno. Para os olheiros, ${paLabel}.`:impressao>=66?`Chamou muita atenção em campo. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=50?`Deixou boa impressão. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=38?`Mostrou lampejos, ainda irregular. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=25?`Saiu cru desta vez — no papel, ${paLabel}.`:`Os olheiros nao foram gentis: "Foca, mancebo, ou pega o caderno." ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`;
   return {ca,pa,paMin,paMax,paPrecise,paLabel,destaques,verdict};
 }
 function pacoteClubeV(forca,nome){
@@ -4688,6 +5171,10 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     if(v.anosCasamento==null)v.anosCasamento=0;
     if(!v.assinaturasDisponiveisVistas)v.assinaturasDisponiveisVistas=[];
   if(!v.aprendProgByPos)v.aprendProgByPos={};
+  if(v.pressaoHype==null)v.pressaoHype=0;
+  if(v.ultimoEventoRaiz==null)v.ultimoEventoRaiz=null;
+  if(v.eventoRaizPendente==null)v.eventoRaizPendente=null;
+  if(v.riscoLesaoTemp==null)v.riscoLesaoTemp=null;
   if(v.tutorialAtivo==null)v.tutorialAtivo=true;
   if(v.tourFeito==null)v.tourFeito=false;
     if(v.saveVersion==null)v.saveVersion=1;
@@ -4758,7 +5245,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     const t=TONS_POST[tom];if(!t)return;
     const ganhoBase=tom==="provocativo"?rnd(800,4000):tom==="confiante"?rnd(400,1800):rnd(300,1200);
     const ganho=ganhoSeguidores(vida,ganhoBase);
-    let v={...vida,seguidores:Math.max(0,(vida.seguidores||30000)+ganho),torcida:clamp((vida.torcida||50)+t.efeitos.torcida,0,100),relacaoTecnico:clamp((vida.relacaoTecnico||60)+(tom==="provocativo"?-3:tom==="tecnico"?+1:0),0,100),log:[...vida.log,{m:`🎤 Entrevista (tom ${t.nome.toLowerCase()}): +${fmtSeguidores(ganho)} seguidores.`,cat:"midia"}]};
+    let v={...vida,seguidores:Math.max(0,(vida.seguidores||30000)+ganho),torcida:clamp((vida.torcida||50)+t.efeitos.torcida,0,100),imagem:clamp((vida.imagem||50)+(t.efeitos.imagem||0),0,100),reputacao:clamp((vida.reputacao||0)+(t.efeitos.fama||0),0,100),relacaoTecnico:clamp((vida.relacaoTecnico||60)+(t.efeitos.relacaoTecnico||0)+(tom==="provocativo"?-3:tom==="tecnico"?+1:0),0,100),log:[...vida.log,{m:`🎤 Entrevista (tom ${t.nome.toLowerCase()}): +${fmtSeguidores(ganho)} seguidores.`,cat:"midia"}]};
     if(v.elenco&&t.efeitos.moralElenco)v.elenco=v.elenco.map(p=>({...p,moral:clamp((p.moral||60)+t.efeitos.moralElenco,0,100)}));
     set(v);setCards(cards.slice(1));
   };
@@ -4974,6 +5461,8 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
         else if(p.cartao==="vermelho"){segDelta=-ganhoSeguidores(v,rnd(800,2500));}
         const novoSegPartida=Math.max(0,(v.seguidores||30000)+segDelta);
         const _golsAntes=v.gols||0;v={...v,jogos:v.jogos+1,gols:v.gols+p.gols,assist:v.assist+p.assist,notaSoma:v.notaSoma+p.nota,seguidores:novoSegPartida,engajamento:clamp((v.engajamento||50)+(p.nota>=7?2:p.nota<5?-3:0),0,100),formaRecente:[...(v.formaRecente||[]),p.nota].slice(-5),historicoJogos:[...(v.historicoJogos||[]),{temp:v.temporada,adv:p.advNome||(rod?rod.adv:null),casa:rod?!!rod.casa:null,nota:p.nota,g:p.gols,a:p.assist,us:opts.placar?opts.placar.us:null,them:opts.placar?opts.placar.them:null,classico}].slice(-8)};resJog={nota:p.nota,adv:p.adv};cardBase={tipo:"partida",classico,placar:opts.placar||null,resultado:opts.placar?(opts.placar.us>opts.placar.them?"vit":opts.placar.us<opts.placar.them?"der":"emp"):null,...p};if(p.cartao==="vermelho"){v.suspenso=1;v.cartoes={a:(v.cartoes&&v.cartoes.a)||0,v:((v.cartoes&&v.cartoes.v)||0)+1};v.relacaoClube=clamp((v.relacaoClube||60)-12,0,100);v.log=[...v.log,{m:"🟥 Cartao vermelho! Voce esta suspenso no proximo jogo."}];}else if(p.cartao==="amarelo"){const novoA=((v.cartoes&&v.cartoes.a)||0)+1;v.cartoes={a:novoA,v:(v.cartoes&&v.cartoes.v)||0};if(novoA>0&&novoA%3===0){v.suspenso=Math.max(1,v.suspenso||0);v.log=[...v.log,{m:`🟨🟨🟨 ${novoA}º amarelo na temporada — suspenso no próximo jogo.`}];}}v.relacaoClube=clamp((v.relacaoClube||60)+Math.round((p.nota-6.6)*1.1)+(p.gols||0),0,100);if(_golsAntes===0&&v.gols>0){const tg=dispararTutorial(v,"primeiro_gol");if(tg)nc.push(tg);}
+        // FASE A B3: penalty extra escalado por dificuldade (Facil perdoa, Dificil morde)
+        {const _sev=dificV(v).sev||1;if(p.nota<5)v.moral=clamp(v.moral-Math.round(rnd(2,5)*_sev),0,100);if(p.cartao==="vermelho")v.relacaoClube=clamp((v.relacaoClube||60)-Math.round(rnd(4,8)*_sev),0,100);}
         // 5B: atualizar recordes pessoais
         const rec=v.recordes||{maxGolsJogo:0,maxGolsTemp:0,maxAssistTemp:0,maxNotaTemp:0,hatTricks:0,vitoriasSeq:0,jogosSemLesao:0,maxVitoriasSeq:0,maxJogosSemLesao:0};
         const venceu=opts.placar&&opts.placar.us>opts.placar.them;
@@ -5033,7 +5522,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
       }
       nc.push(cardBase);
       {const jM2=v.jogos-jogos0;if(jM2>0&&!v.empOrigem){const nMm=(v.notaSoma-notaSoma0)/jM2;if(nMm>=7.3&&(v.olheiros||0)>=22&&Math.random()<0.32){const alvo=clubeOlheiroV(v);if(alvo){v.olheiros=clamp((v.olheiros||0)+rnd(7,13),0,100);nc.push({tipo:"olheiro_relatorio",olheiro:nomeOlheiro((v.temporada||1)+alvo.nome+v.semana),clube:alvo.nome,europa:alvo.europa,nota:+nMm.toFixed(1)});}}}}
-      {const jE=v.jogos-jogos0;const temJornal=nc.some(c=>c.tipo==="jornalista");if(jE>0&&!temJornal&&Math.random()<(classico?0.62:0.4)){const nE=(v.notaSoma-notaSoma0)/jE;const bem=nE>=6.8,mal=nE<5.6;nc.push({tipo:"escolha",titulo:"📺 Entrevista pós-jogo",texto:`Os repórteres cercam você ${bem?"depois de uma boa atuação":mal?"depois de um jogo difícil":"na saída do gramado"}. Que tom você usa?`,opcoes:[{label:"🙏 Humilde — elogiar o grupo",fn:x=>({...x,imagem:clamp((x.imagem||50)+rnd(3,6),0,100),torcida:clamp((x.torcida||50)+2,0,100),moral:clamp(x.moral+3,0,100),reputacao:clamp(x.reputacao+1,0,100),log:[...x.log,{m:"Entrevista: foi humilde e elogiou o grupo."}]})},{label:"💪 Confiante — assumir o protagonismo",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(2,4),0,100),imagem:clamp((x.imagem||50)+(bem?rnd(2,5):-rnd(1,4)),0,100),torcida:clamp((x.torcida||50)+rnd(0,2),0,100),moral:clamp(x.moral+(bem?3:-1),0,100)})},{label:"🔥 Provocador — alfinetar o rival",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(4,7),0,100),imagem:clamp((x.imagem||50)-rnd(2,6),0,100),torcida:clamp((x.torcida||50)+(classico?rnd(3,6):rnd(1,3)),0,100),moral:clamp(x.moral+(bem?2:-3),0,100),log:[...x.log,{m:"Entrevista: soltou uma provocação."}]})}]});}}
+      {const jE=v.jogos-jogos0;const temJornal=nc.some(c=>c.tipo==="jornalista");if(jE>0&&!temJornal&&Math.random()<(classico?0.62:0.4)){const nE=(v.notaSoma-notaSoma0)/jE;const bem=nE>=6.8,mal=nE<5.6;nc.push({tipo:"escolha",titulo:"📺 Entrevista pós-jogo",texto:`Os repórteres cercam você ${bem?"depois de uma boa atuação":mal?"depois de um jogo difícil":"na saída do gramado"}. Que tom você usa?`,opcoes:[{label:"🙏 Humilde — elogiar o grupo",fn:x=>({...x,imagem:clamp((x.imagem||50)+rnd(3,6),0,100),torcida:clamp((x.torcida||50)+2,0,100),moral:clamp(x.moral+3,0,100),reputacao:clamp(x.reputacao+1,0,100),log:[...x.log,{m:"Entrevista: foi humilde e elogiou o grupo."}]})},{label:"💪 Confiante — assumir o protagonismo",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(2,4),0,100),imagem:clamp((x.imagem||50)+(bem?rnd(2,5):-rnd(1,4)),0,100),torcida:clamp((x.torcida||50)+rnd(0,2),0,100),moral:clamp(x.moral+(bem?3:-1),0,100)})},{label:"🔥 Provocador — alfinetar o rival",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(4,7),0,100),imagem:clamp((x.imagem||50)-rnd(4,9),0,100),torcida:clamp((x.torcida||50)+(classico?rnd(3,6):rnd(1,3)),0,100),moral:clamp(x.moral+(bem?2:-5),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)-rnd(2,5),0,100),relacaoClube:clamp((x.relacaoClube||60)-rnd(1,4),0,100),disciplina:clamp((x.disciplina||50)-rnd(3,6),0,100),log:[...x.log,{m:"🔥 Entrevista provocadora — vestiário e diretoria torceram o nariz.",cat:"vida"}]})}]});}}
     } else if(v.fase!=="peneira"){
       const fr=(v.formaRecente||[]);const formaMed=fr.length?fr.reduce((a,b)=>a+b,0)/fr.length:6.4;
       let ds=0;
@@ -5041,7 +5530,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
       if(v.papel==="reserva"&&(v.sinergia||50)>40)ds-=1;
       if(ds!==0){v.sinergia=clamp((v.sinergia||50)+ds,0,100);v={...v,log:[...v.log,{m:ds>0?"🤝 Entrosamento crescendo nos treinos.":"🧊 Pouca minutagem — entrosamento esfriando."}]};}
       if(v.fase!=="base"){let dt=0;if(formaMed>=7&&(v.torcida||50)<90)dt=1;else if(formaMed<6&&(v.torcida||50)>30)dt=-1;else if((v.torcida||50)>64)dt=-1;else if((v.torcida||50)<38)dt=1;if(dt!==0)v.torcida=clamp((v.torcida||50)+dt,0,100);}
-      v.olheiros=clamp((v.olheiros||0)*0.96,0,100);
+      v.olheiros=clamp((v.olheiros||0)*(1-(0.04*(dificV(v).sev||1))),0,100); // FASE A B3: dificuldade acelera perda de olheiros
     }
     // B2 (v9.78): sondagem per-week removida — substituida pela janela bi-anual na meia-temporada (linha ~3728).
     // Codigo legado preservado em git history se precisar restaurar.
@@ -5059,7 +5548,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
       v.felicidade=clamp((v.felicidade!=null?v.felicidade:60)+df,0,100);
       v.moral=clamp(Math.round(v.moral+(v.felicidade-v.moral)*0.05),0,100);
     }
-    v={...v,semana:v.semana+1,treinouSemana:false,conversouSemana:false,postouSemana:false};
+    v={...v,semana:v.semana+1,treinouSemana:false,conversouSemana:false,postouSemana:false,pressaoHype:Math.max(0,(v.pressaoHype||0)-3)};
     {const al=moradiaInfo(v.moradia).aluguel;
      const patroMes=Math.round((patrocinioAno(v)+((v.patrocinios||[]).reduce((s,p)=>s+p.valorAno,0)))/12);
      const comMes=v.agente?Math.round((v.salarioMes||0)*v.agente.comissao):0;
@@ -5084,6 +5573,18 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
         nc.push({tipo:"evento",titulo:"🩺 Atenção ao desgaste",texto:`O corpo está pedindo cuidado: risco de lesão entrou no nível alto. Considere baixar a intensidade do treino ou fazer uma sessão de fisioterapia.`});
       }
     }
+    // FASE A B5: sugestao de DESISTIR no Dificil quando tudo desaba (1x por temporada)
+    if(v.dificuldade==="dificil"&&v.fase==="profissional"&&!v.fim&&(v.ultimoFundoPoco||0)!==v.temporada){
+      const moralR=v.moral<22,energiaR=v.energia<22,olheirosR=(v.olheiros||0)<10,clubeR=(v.relacaoClube||60)<20;
+      const fundosBatidos=(moralR?1:0)+(energiaR?1:0)+(olheirosR?1:0)+(clubeR?1:0);
+      if(fundosBatidos>=3){
+        v.ultimoFundoPoco=v.temporada;
+        nc.push({tipo:"escolha",titulo:"😞 Bateu o fundo do poço",texto:`Moral ${v.moral}/100, energia ${v.energia}/100, olheiros ${v.olheiros||0}/100, relacao com o clube ${v.relacaoClube||60}/100. Voce parou e pensou: vale a pena seguir empurrando essa carreira? Largar agora vira pagina — talvez seja a hora.`,opcoes:[
+          {label:"💪 Vou virar o jogo — fico",fn:x=>({...x,moral:clamp((x.moral||0)+rnd(4,8),0,100),log:[...x.log,{m:"Bateu no fundo do poço mas decidiu seguir lutando."}]})},
+          {label:"🚪 Largar o futebol",fn:x=>{const finalTxt=typeof pickFinalDesistencia==="function"?pickFinalDesistencia():null;return {...x,fim:true,fase:"aposentado",desistiu:true,finalDesistencia:finalTxt,log:[...x.log,{m:"Pendurou as chuteiras — quando o futebol cobra demais, voltar pra casa tambem e uma vitoria."}]};}}
+        ]});
+      }
+    }
     // QoL #2: Avisar quando uma assinatura nova fica disponivel (passou a ser elegivel)
     if(v.fase!=="peneira"){
       const vistasAss=v.assinaturasDisponiveisVistas||[];
@@ -5092,6 +5593,23 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
         v={...v,assinaturasDisponiveisVistas:[...vistasAss,...novasAssDispo]};
         novasAssDispo.forEach(k=>{const a=ASSINATURAS[k];const aviso=(typeof pickHabilidadeAviso==="function"?pickHabilidadeAviso():"");nc.push({tipo:"evento",titulo:`✦ Nova habilidade-assinatura disponível`,texto:`${a.ic} ${a.nome} agora pode ser treinada. ${a.desc}${aviso?" "+aviso:""}`});});
       }
+    }
+    // FASE B E1: sortear evento raiz semanal (18% base, evita repeticao consecutiva)
+    if(v.fase!=="peneira"&&!v.fim&&typeof EVENTOS_RAIZ!=="undefined"){
+      let triggerId=null;
+      // Eventos disparados por outros (encadeamento)
+      if(v.eventoRaizPendente&&v.eventoRaizPendente.em<=v.semana){triggerId=v.eventoRaizPendente.id;v.eventoRaizPendente=null;}
+      const chance=triggerId?1:0.18;
+      if(Math.random()<chance){
+        const ev=triggerId?(EVENTOS_RAIZ[triggerId]?{id:triggerId,...EVENTOS_RAIZ[triggerId]}:null):sortearEventoRaiz(v);
+        if(ev){
+          v.ultimoEventoRaiz=ev.id;
+          const _sub=(s)=>(s||"").replace(/\[NOME\]/g,(v.nome||"voce").split(/\s+/)[0]).replace(/\[CLUBE\]/g,v.clube||"o clube").replace(/\[MAE\]/g,"sua mae").replace(/\[PAI\]/g,"seu pai");
+          nc.push({tipo:"evento_raiz",id:ev.id,ic:ev.ic,titulo:_sub(ev.titulo),texto:_sub(ev.texto),opcoes:(ev.opcoes||[]).map(o=>({label:o.label,efeitos:o.efeitos}))});
+        }
+      }
+      // Decair contador risco_lesao temporario
+      if(v.riscoLesaoTemp&&v.riscoLesaoTemp.semRestantes>0){v.riscoLesaoTemp={...v.riscoLesaoTemp,semRestantes:v.riscoLesaoTemp.semRestantes-1};if(v.riscoLesaoTemp.semRestantes<=0)v.riscoLesaoTemp=null;}
     }
     set(v);setCards(nc);
     if(v.fim){setCards([]);setTela("fim");}
@@ -5321,7 +5839,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
   if(tela==="fim")return <FimCarreira vida={vida} onTecnico={iniciarTecnico} onComprarClube={iniciarDono} onReset={()=>{setVida(null);setCards([]);setTentPeneira(0);setPeneiraRes(null);setTela("criacao");}} onMenu={goMenu}/>;
 
   return (<>
-    <VidaDashboard vida={vida} setFoco={f=>{const v={...vida,foco:f,enfase:null};set(v);const tFo=dispararTutorial(v,"primeiro_foco");if(tFo)setCards(c=>[...c,tFo]);}} setIntens={i=>set({...vida,intensidade:i})} onAprenderPos={p=>{const byPos={...(vida.aprendProgByPos||{})};const prog=byPos[p]||0;set({...vida,aprendendoPos:p,aprendProg:prog,aprendProgByPos:byPos});}} onCancelarPos={()=>{const pos=vida.aprendendoPos;const byPos={...(vida.aprendProgByPos||{})};if(pos)byPos[pos]=vida.aprendProg||0;set({...vida,aprendendoPos:null,aprendProg:0,aprendProgByPos:byPos});}} onAvancar={onAvancarClick} onTreinoOpen={()=>setTreinoModal(true)} onMenu={goMenu} onVidaPessoal={()=>{setVidaPessoal(true);const tV=dispararTutorial(vida,"primeira_acao_vida");if(tV)setCards(c=>[...c,tV]);}} onNegociar={negociarRenovacao} onCarreira={()=>setVerCarreira(true)} onImprensa={()=>setVerImprensa(true)} onAquecer={aquecerNome} onCacarEuropa={cacarEuropa} onPedirAgente={pedirAgente} onContratarAgente={contratarAgente} onDemitirAgente={demitirAgente} onBuscarClube={buscarClube} onPedirAumento={pedirAumento} onPedirSaida={pedirSaida} onVerSondagem={verSondagem} onRecusarSondagem={recusarSondagem} onBuscarEmprestimo={buscarEmprestimo} onFisio={fisioterapia} onEquiparAssinatura={equiparAssinatura} onTreinarAssinatura={treinarAssinatura} setAutoTreino={b=>set({...vida,autoTreino:b})} setEnfase={k=>set({...vida,enfase:vida.enfase===k?null:k})} onConversarElenco={conversarElenco} onPlanoTec={()=>setShowPlanoTec(true)} onPostar={()=>setShowPostar(true)} onTutorial={()=>{set({...vida,tourFeito:false,tutorialAtivo:true});setTourIdx(0);}}/>
+    <VidaDashboard vida={vida} setFoco={f=>{const v={...vida,foco:f,enfase:null};set(v);const tFo=dispararTutorial(v,"primeiro_foco");if(tFo)setCards(c=>[...c,tFo]);}} setIntens={i=>set({...vida,intensidade:i})} onAprenderPos={p=>{const byPos={...(vida.aprendProgByPos||{})};const prog=byPos[p]||0;set({...vida,aprendendoPos:p,aprendProg:prog,aprendProgByPos:byPos});}} onCancelarPos={()=>{const pos=vida.aprendendoPos;const byPos={...(vida.aprendProgByPos||{})};if(pos)byPos[pos]=vida.aprendProg||0;set({...vida,aprendendoPos:null,aprendProg:0,aprendProgByPos:byPos});}} onAvancar={onAvancarClick} onTreinoOpen={()=>setTreinoModal(true)} onMenu={goMenu} onVidaPessoal={()=>{setVidaPessoal(true);const tV=dispararTutorial(vida,"primeira_acao_vida");if(tV)setCards(c=>[...c,tV]);}} onNegociar={negociarRenovacao} onCarreira={()=>setVerCarreira(true)} onImprensa={()=>setVerImprensa(true)} onAquecer={aquecerNome} onCacarEuropa={cacarEuropa} onPedirAgente={pedirAgente} onContratarAgente={contratarAgente} onDemitirAgente={demitirAgente} onBuscarClube={buscarClube} onPedirAumento={pedirAumento} onPedirSaida={pedirSaida} onVerSondagem={verSondagem} onRecusarSondagem={recusarSondagem} onBuscarEmprestimo={buscarEmprestimo} onFisio={fisioterapia} onEquiparAssinatura={equiparAssinatura} onTreinarAssinatura={treinarAssinatura} setAutoTreino={b=>set({...vida,autoTreino:b})} setEnfase={k=>set({...vida,enfase:vida.enfase===k?null:k})} onConversarElenco={conversarElenco} onPlanoTec={()=>setShowPlanoTec(true)} onPostar={()=>setShowPostar(true)} onTutorial={()=>{set({...vida,tourFeito:false,tutorialAtivo:true});setTourIdx(0);}} onDesistir={()=>{const finalTxt=typeof pickFinalDesistencia==="function"?pickFinalDesistencia():null;const v={...vida,fim:true,fase:"aposentado",desistiu:true,finalDesistencia:finalTxt};set(v);setCards([]);setTela("fim");}}/>
     {cards.length>0&&(cards[0].tipo==="contrato"||cards[0].tipo==="agente_livre")
       ? <ContratoModal card={cards[0]} vida={vida} onAssinar={assinarContrato} onRecusar={()=>recusarRenova(cards[0])}/>
       : cards.length>0&&<CardModalVida card={cards[0]} vida={vida} onInfo={()=>resolverCard()} onEscolha={resolverCard} onTransfer={resolverTransfer} onAposentar={resolverAposentar} onCopa={resolverCopa} onBolsa={resolverBolsa} onPosicao={aceitarPosicao} onPatrocinio={resolverPatrocinio} onEmprestimo={resolverEmprestimo} onDuelo={onDuelo}/>}
@@ -5388,7 +5906,7 @@ function CriacaoVida({temSave,onCriar,onCriarPro,onCriarVet,onContinuar,onMenu})
       </div>
       <div style={{fontSize:10,color:"#727b87",marginTop:4}}>{posPref?`${POS_NOME[posPref]} — você começa nessa posição (e pode mantê-la na peneira)`:"A altura vai sortear sua vocação"}</div>
       <label style={lbl}>Dificuldade</label>
-      <div style={{display:"flex",gap:6}}>{Object.entries(DIFIC).map(([k,d])=><button key={k} onClick={()=>setDif(k)} style={{flex:1,borderRadius:10,padding:"9px 4px",cursor:"pointer",fontFamily:"Oswald,sans-serif",fontSize:13,border:dif===k?`1px solid ${d.cor}`:"1px solid #2c313b",background:dif===k?`${d.cor}1f`:"#101216",color:dif===k?d.cor:"#9aa0aa"}}>{d.ic} {d.nome}</button>)}</div>
+      <div style={{display:"flex",gap:6}}>{Object.entries(DIFIC).map(([k,d])=><button key={k} onClick={()=>setDif(k)} style={{flex:1,borderRadius:10,padding:"9px 4px",cursor:"pointer",fontFamily:"Oswald,sans-serif",fontSize:13,border:dif===k?`1px solid ${d.cor}`:"1px solid #2c313b",background:dif===k?`${d.cor}1f`:"#101216",color:dif===k?d.cor:"#9aa0aa",display:"flex",flexDirection:"column",alignItems:"center",lineHeight:1.15,gap:2}}>{d.ic} {d.nome}{d.apelido&&<span style={{fontSize:9,opacity:.8,fontStyle:"italic",fontFamily:"Barlow,sans-serif"}}>{d.apelido}</span>}</button>)}</div>
       <div style={{fontSize:10.5,color:"#727b87",marginTop:5,lineHeight:1.4}}>{DIFIC[dif].d}</div>
       <div style={{...card,marginTop:16,fontSize:12,color:"#9aa0aa",lineHeight:1.5}}>🎲 Talento e atributos iniciais são sorteados (cada jogador nasce diferente). Sua <b style={{color:"#fff"}}>altura inclina a vocação</b> — mais alto puxa pra zaga/gol, mais baixo pra meio/ponta. Você escolhe a <b style={{color:"#fff"}}>posição de preferência</b>; na peneira o técnico ainda dá a opinião dele, mas <b style={{color:"#fff"}}>a decisão final é sua</b>.</div>
       <button onClick={()=>setTutAtivo(!tutAtivo)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",marginTop:14,padding:"10px 12px",background:tutAtivo?"rgba(34,197,94,.08)":"#101216",border:"1px solid "+(tutAtivo?"#22c55e44":"#2c313b"),borderRadius:10,cursor:"pointer",fontFamily:"Barlow,sans-serif",color:tutAtivo?"#cbd0d8":"#7a8190",fontSize:12.5,textAlign:"left"}}><span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:20,height:20,borderRadius:5,border:"2px solid "+(tutAtivo?"#22c55e":"#3a3f48"),background:tutAtivo?"#22c55e":"transparent",color:"#0a0a0a",fontWeight:700,fontSize:13}}>{tutAtivo?"✓":""}</span><span style={{flex:1}}>📚 Ativar tutorial <span style={{color:"#727b87",fontSize:11}}>— dicas e tour do dashboard. Pode reativar depois no "?"</span></span></button>
@@ -5458,7 +5976,7 @@ function PeneiraVida({vida,tent,onAssinar,onTentar,onTrocarPos,onMenu}){
   const proximo=()=>{
     if(etapa>=ETAPAS_PEN.length-1){
       const sc=[...scores];const n=sc.length||1;const avg=sc.reduce((a,b)=>a+b.raw,0)/n;
-      const impressao=clamp(Math.round(avg*0.55+vida.potencial*0.25+rnd(-6,6)),0,100);
+      const impressao=clamp(Math.round(avg*0.62+vida.potencial*0.10+rnd(-4,4)),0,100); // FASE A B4/B2: atributo manda, potencial empurra menos
       const voc=vida.vocacao||posicaoIdeal(vida.at,vida.altura).pos;
       const rec=posicaoIdeal(vida.at,vida.altura).pos;
       setFim({impressao,cortadoEm:null,recap:sc,pos:rec,voc,nivel,sug:sugestoesPos(vida.at,voc,vida.altura),dev:(()=>{const W=PESO_OVR[rec]||{};const relAt=Object.keys(vida.at).map(k=>({k,v:vida.at[k],w:W[k]||0})).filter(x=>x.w>=0.1);const forte=relAt.slice().sort((a,b)=>b.v-a.v)[0];const treinar=relAt.filter(x=>x.v<64&&(!forte||x.k!==forte.k)).sort((a,b)=>(b.w*(72-b.v))-(a.w*(72-a.v))).slice(0,2).map(x=>MACRO_NOME[x.k]||x.k);return {treinar,forte:forte?(MACRO_NOME[forte.k]||forte.k):null};})(),clubes:clubesPeneira(impressao,idade,tent,vida.estado,nivel,vida.potencial)});
@@ -5734,7 +6252,13 @@ function PartidaInterativa({vida,partida,setPartida,onConcluir}){
   };
   // ESCOLHER DECISÃO — variação que pode disparar comemora ao marcar
   const escolherDecisao=(efFn)=>{
-    const o=efFn();
+    // FASE A B4: bias honesto - chance de sucesso depende do OVR na posicao do jogador (ate +/-0.10 no roll)
+    const ovrPos=ovrDe(vida.at,partida.pos);
+    const bias=clamp((ovrPos-65)/300,-0.10,0.10);
+    const _origRandom=Math.random;
+    Math.random=function(){return clamp(_origRandom.call(this)-bias,0,0.9999);};
+    let o;
+    try{o=efFn();}finally{Math.random=_origRandom;}
     const novosAmar=(partida.amarelos||0)+(o.dAmarelo||0);
     const expulsoVm=(o.dVermelho||0)>0;
     const segundoAm=(o.dAmarelo||0)>0&&novosAmar>=2;
@@ -5974,7 +6498,7 @@ function PartidaInterativa({vida,partida,setPartida,onConcluir}){
         <div style={{textAlign:"center",fontSize:11,color:"#8b909a",marginBottom:10,letterSpacing:1}}>COMO VOCÊ COMEMORA?</div>
         {[
           {label:"🙏 Dedicada à família/torcida",d:"+imagem · +torcida do clube",ef:()=>({dImagem:rnd(5,10),dTorcida:rnd(2,5),dNota:0.05,txt:"Apontou pra família na arquibancada — emoção pura. Torcida vibrou.",ic:"🙏",col:"#9be8b0"})},
-          {label:"🔥 Polêmica — provocar rival",d:"+fama · -imagem · 22% amarelo",ef:()=>{const am=Math.random()<0.22;return am?{dReputacao:rnd(3,6),dImagem:-rnd(3,7),dNota:-0.05,dAmarelo:1,txt:"Comemoração provocadora — o juiz veio amarelo na mão.",ic:"🟨",col:"#eab308"}:{dReputacao:rnd(3,6),dImagem:-rnd(3,7),dNota:0,txt:"Provocou a torcida adversária — dividiu opiniões, mas viralizou.",ic:"🔥",col:"#fb923c"};}},
+          {label:"🔥 Polêmica — provocar rival",d:"+fama · -imagem · -clube/disciplina · 28% amarelo",ef:()=>{const am=Math.random()<0.28;return am?{dReputacao:rnd(3,6),dImagem:-rnd(5,10),dNota:-0.15,dAmarelo:1,dRelacaoClube:-rnd(2,5),dDisciplina:-rnd(4,8),txt:"Comemoração provocadora — o juiz veio amarelo na mão e o banco se irritou.",ic:"🟨",col:"#eab308"}:{dReputacao:rnd(3,6),dImagem:-rnd(4,8),dNota:-0.05,dRelacaoClube:-rnd(1,3),dDisciplina:-rnd(2,5),txt:"Provocou a torcida adversária — dividiu opiniões, viralizou, mas dentro do clube ninguém gostou.",ic:"🔥",col:"#fb923c"};}},
           {label:"😎 Humilde — só apontar pro time",d:"+imagem leve · respeito",ef:()=>({dImagem:rnd(2,4),dNota:0.02,txt:"Apontou pros companheiros — gol da equipe. Humilde como sempre.",ic:"🤝",col:"#9be8b0"})}
         ].map((opt,i)=>(<button key={i} onClick={()=>escolherComemora(opt.ef)} style={{display:"block",width:"100%",textAlign:"left",padding:"10px 12px",background:"#16181d",border:"1px solid #23272f",borderRadius:10,marginBottom:8,cursor:"pointer"}}>
           <div style={{fontSize:14,color:"#fff",fontFamily:"Oswald,sans-serif"}}>{opt.label}</div>
@@ -5986,8 +6510,8 @@ function PartidaInterativa({vida,partida,setPartida,onConcluir}){
         <div style={{textAlign:"center",fontFamily:"Oswald,sans-serif",fontSize:19,color:"#fbbf24",marginBottom:6}}>Falta dura em você! <span style={{color:"#727b87",fontSize:14}}>{clk}'</span></div>
         <div style={{textAlign:"center",fontSize:12,color:"#9aa0aa",marginBottom:14,lineHeight:1.4}}>O zagueiro chegou pesado e te derrubou. Como você reage?</div>
         {[
-          {label:"💢 Encarar o adversário",d:"Cara a cara — pode tomar amarelo (12%)",ef:()=>(Math.random()<0.12)?{cat:"amarelo",dNota:-0.15,drain:5,txt:"Encarou o cara, reclamação acalorada e o juiz te amarelou.",ic:"🟨",col:"#eab308",dAmarelo:1}:{dNota:0.1,drain:4,txt:"Encarou firme. O adversário recuou e o estádio cantou seu nome.",ic:"💪",col:"#9be8b0"}},
-          {label:"🎬 Cair forte, pedir cartão",d:"Pode amarelar o adversário (42%)",ef:()=>(Math.random()<0.42)?{dNota:0.18,drain:3,txt:"Pediu o cartão batendo no chão — o juiz amarelou o adversário!",ic:"🟨",col:"#22c55e"}:{dNota:-0.05,drain:3,txt:"O juiz mandou seguir o jogo. Você levanta meio frustrado.",ic:"🤷",col:"#9aa0aa"}},
+          {label:"💢 Encarar o adversário",d:"Cara a cara: testa a moral, custa energia mental (12% amarelo)",ef:()=>(Math.random()<0.12)?{cat:"amarelo",dNota:-0.15,drain:6,dAmarelo:1,dRelacaoClube:-rnd(0,2),txt:"Encarou o cara, reclamação acalorada e o juiz te amarelou.",ic:"🟨",col:"#eab308"}:{dNota:0.1,drain:6,txt:"Encarou firme. O adversário recuou e o estádio cantou seu nome — mas você gastou energia mental.",ic:"💪",col:"#9be8b0"}},
+          {label:"🎬 Cair forte, pedir cartão",d:"Imagem cai, clube cobra fair-play (32% sucesso)",ef:()=>{const r=Math.random();if(r<0.32)return{dNota:0.12,drain:4,dImagem:-rnd(3,6),dRelacaoClube:-rnd(1,2),txt:"Pediu o cartão batendo no chão — o juiz amarelou o adversário! Mas a torcida vaiou e a imprensa flagrou a teatralidade.",ic:"🟨",col:"#22c55e"};if(r<0.62)return{dNota:-0.08,drain:4,dImagem:-rnd(3,6),dRelacaoClube:-rnd(1,3),txt:"O juiz mandou seguir e a transmissao pegou a teatralidade — saiu na rede e o clube pediu compostura.",ic:"🤷",col:"#9aa0aa"};return{cat:"amarelo",dNota:-0.20,drain:4,dAmarelo:1,dImagem:-rnd(4,8),dRelacaoClube:-rnd(2,4),txt:"O juiz percebeu a simulação e te amarelou. Pegou mal na transmissao — clube cobrou compostura.",ic:"🟨",col:"#eab308"};}},
           {label:"😤 Reclamar com o juiz",d:"Risco de amarelo pra você (22%)",ef:()=>(Math.random()<0.22)?{cat:"amarelo",dNota:-0.2,drain:5,txt:"Reclamou demais e o juiz te amarelou.",ic:"🟨",col:"#eab308",dAmarelo:1}:{dNota:0,drain:4,txt:"Reclamou, falou tudo na cara do juiz, e seguiu o jogo.",ic:"😤",col:"#9aa0aa"}}
         ].map((opt,i)=>(<button key={i} onClick={()=>escolherFalta(opt.ef)} style={{display:"block",width:"100%",textAlign:"left",padding:"10px 12px",background:"#16181d",border:"1px solid #23272f",borderRadius:10,marginBottom:8,cursor:"pointer"}}>
           <div style={{fontSize:14,color:"#fff",fontFamily:"Oswald,sans-serif"}}>{opt.label}</div>
@@ -6035,7 +6559,7 @@ function PartidaInterativa({vida,partida,setPartida,onConcluir}){
     </div>
   </div>);
 }
-function VidaDashboard({vida,setFoco,setIntens,onAvancar,onTreinoOpen,onMenu,onVidaPessoal,onNegociar,onCarreira,onImprensa,onAquecer,onCacarEuropa,onPedirAgente,onContratarAgente,onDemitirAgente,onBuscarClube,onPedirAumento,onPedirSaida,onVerSondagem,onRecusarSondagem,onBuscarEmprestimo,onFisio,onEquiparAssinatura,onTreinarAssinatura,setAutoTreino,onAprenderPos,onCancelarPos,setEnfase,onConversarElenco,onPlanoTec,onPostar,onTutorial}){
+function VidaDashboard({vida,setFoco,setIntens,onAvancar,onTreinoOpen,onMenu,onVidaPessoal,onNegociar,onCarreira,onImprensa,onAquecer,onCacarEuropa,onPedirAgente,onContratarAgente,onDemitirAgente,onBuscarClube,onPedirAumento,onPedirSaida,onVerSondagem,onRecusarSondagem,onBuscarEmprestimo,onFisio,onEquiparAssinatura,onTreinarAssinatura,setAutoTreino,onAprenderPos,onCancelarPos,setEnfase,onConversarElenco,onPlanoTec,onPostar,onTutorial,onDesistir}){
   const t=clubeBadge(vida.clube);const media=vida.jogos>0?(vida.notaSoma/vida.jogos).toFixed(1):"–";
   const tr=traitsDe(vida);
   const focoAtual=TREINOS_V[vida.foco]||TREINOS_V.fisico;const ehAtr=focoAtual.tipo==="atr";
@@ -6069,7 +6593,7 @@ function VidaDashboard({vida,setFoco,setIntens,onAvancar,onTreinoOpen,onMenu,onV
         {onPlanoTec&&<button onClick={onPlanoTec} style={{flex:1,fontSize:12,padding:"5px 0",border:"1px solid "+(vida.planoTreino?"#4a2f7a":"#20222a"),borderRadius:8,background:vida.planoTreino?"#1a1230":"#12141a",color:vida.planoTreino?"#c084fc":"#9aa0aa",cursor:"pointer",fontFamily:"Barlow,sans-serif"}}>📋 {vida.planoTreino?"Plano":"Plano"}</button>}
         {onPostar&&<button onClick={onPostar} disabled={vida.postouSemana} style={{flex:1,fontSize:12,padding:"5px 0",border:"1px solid #20222a",borderRadius:8,background:"#12141a",color:vida.postouSemana?"#4b4f57":"#9aa0aa",cursor:vida.postouSemana?"default":"pointer",fontFamily:"Barlow,sans-serif"}}>📱 {vida.postouSemana?"Postou":"Postar"}</button>}
         
-        <button data-snd="off" onClick={()=>{if(typeof toggleFlmAudio==="function")toggleFlmAudio();setMuteTick(t=>t+1);}} title={muted?"Som mutado — clique pra ativar":"Som ligado — clique pra mutar"} style={{flex:"0 0 auto",fontSize:13,padding:"5px 9px",border:"1px solid "+(muted?"#5a3a3a":"#2a4a6a"),borderRadius:8,background:"#10131a",color:muted?"#fb7185":"#9cc4f0",cursor:"pointer",fontFamily:"Oswald,sans-serif"}}>{muted?"🔇":"🔊"}</button>{onTutorial&&<button onClick={onTutorial} title="Reabrir tutorial" style={{flex:"0 0 auto",fontSize:12,padding:"5px 10px",border:"1px solid #2a4a6a",borderRadius:8,background:"#10131a",color:"#9cc4f0",cursor:"pointer",fontFamily:"Oswald,sans-serif"}}>?</button>}<button onClick={onMenu} style={{flex:1,fontSize:12,padding:"5px 0",border:"1px solid #20222a",borderRadius:8,background:"#12141a",color:"#9aa0aa",cursor:"pointer",fontFamily:"Barlow,sans-serif"}}>Modos</button>
+        <button data-snd="off" onClick={()=>{if(typeof toggleFlmAudio==="function")toggleFlmAudio();setMuteTick(t=>t+1);}} title={muted?"Som mutado — clique pra ativar":"Som ligado — clique pra mutar"} style={{flex:"0 0 auto",fontSize:13,padding:"5px 9px",border:"1px solid "+(muted?"#5a3a3a":"#2a4a6a"),borderRadius:8,background:"#10131a",color:muted?"#fb7185":"#9cc4f0",cursor:"pointer",fontFamily:"Oswald,sans-serif"}}>{muted?"🔇":"🔊"}</button><button onClick={()=>{if(window.confirm("Tem certeza que quer largar o futebol agora? Sua carreira termina aqui."))onDesistir&&onDesistir();}} title="Largar o futebol" style={{flex:"0 0 auto",fontSize:12,padding:"5px 9px",border:"1px solid #5a2230",borderRadius:8,background:"#10131a",color:"#f0a3a3",cursor:"pointer",fontFamily:"Oswald,sans-serif"}}>🚪 Desistir</button>{onTutorial&&<button onClick={onTutorial} title="Reabrir tutorial" style={{flex:"0 0 auto",fontSize:12,padding:"5px 10px",border:"1px solid #2a4a6a",borderRadius:8,background:"#10131a",color:"#9cc4f0",cursor:"pointer",fontFamily:"Oswald,sans-serif"}}>?</button>}<button onClick={onMenu} style={{flex:1,fontSize:12,padding:"5px 0",border:"1px solid #20222a",borderRadius:8,background:"#12141a",color:"#9aa0aa",cursor:"pointer",fontFamily:"Barlow,sans-serif"}}>Modos</button>
       </div>
 
       <div style={{flex:"0 0 auto",display:"flex",gap:4,padding:"8px 12px 0"}}>
@@ -6935,6 +7459,15 @@ function CardModalVida({card,vida,onInfo,onEscolha,onTransfer,onAposentar,onCopa
     {card.lore&&<div style={{fontSize:13,color:"#cbd0d8",marginBottom:18,lineHeight:1.5,fontStyle:"italic",padding:"10px 14px",background:"#0d0f13",border:"1px solid #20222a",borderRadius:10,textAlign:"left"}}>"{card.lore}"</div>}
     <button onClick={onInfo} style={{...btnPrimary,width:"100%"}}>Que orgulho!</button>
   </div>);}
+  else if(card.tipo==="evento_raiz"){conteudo=(<div style={{padding:"4px 2px"}}>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,paddingBottom:8,borderBottom:"1px solid rgba(201,162,75,.18)"}}>
+      <span style={{width:3,height:18,background:"linear-gradient(#C9A24B,#8a6d2f)",borderRadius:2,display:"inline-block"}}/>
+      <span style={{fontFamily:"Oswald,sans-serif",color:"#C9A24B",fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700}}>Raiz · da vida real</span>
+    </div>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:28}}>{card.ic||"📍"}</span><div style={{fontFamily:"Oswald,sans-serif",color:"#F4EFE6",fontSize:18,letterSpacing:.3,flex:1}}>{card.titulo}</div></div>
+    <div style={{fontFamily:"Barlow,sans-serif",fontSize:14,color:"#cbd0d8",marginBottom:18,lineHeight:1.5}}>{card.texto}</div>
+    {(card.opcoes||[]).map((o,i)=>(<button key={i} onClick={()=>onEscolha(x=>{const _sev=(typeof dificV==="function"?(dificV(x).sev||1):1);const nv=aplicarEfeitosRaiz({...x,at:{...x.at}},o.efeitos,_sev);return nv;})} style={{display:"flex",alignItems:"center",width:"100%",cursor:"pointer",textAlign:"left",background:i===0?"linear-gradient(135deg,#0F3B2E,#1f7a48)":"linear-gradient(180deg,#0F3B2E,#082720)",color:"#F4EFE6",border:"1px solid "+(i===0?"#C9A24B":"rgba(201,162,75,.35)"),borderLeft:"3px solid "+(i===0?"#C9A24B":"#5fa68a"),padding:"10px 12px",marginBottom:7,borderRadius:10,minHeight:48,fontFamily:"Oswald,sans-serif",fontSize:13.5,letterSpacing:.3,lineHeight:1.35}}>{o.label}</button>))}
+  </div>);}
   else if(card.tipo==="escolha"){conteudo=(<div style={{padding:"4px 2px"}}>
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,paddingBottom:8,borderBottom:"1px solid rgba(201,162,75,.18)"}}>
       <span style={{width:3,height:18,background:"linear-gradient(#C9A24B,#8a6d2f)",borderRadius:2,display:"inline-block"}}/>
@@ -6951,7 +7484,7 @@ function CardModalVida({card,vida,onInfo,onEscolha,onTransfer,onAposentar,onCopa
   else if(card.tipo==="jornalista"){conteudo=(<div style={{padding:"4px 2px"}}><div style={{textAlign:"center",marginBottom:10}}>
     <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"4px 10px",borderRadius:30,background:"linear-gradient(180deg,#143020,#0F3B2E)",border:"1px solid #C9A24B",fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#E2C485",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>🎤 Coletiva pós-jogo</div>
     <div style={{fontFamily:"Oswald,sans-serif",color:"#F4EFE6",fontSize:18,letterSpacing:.3}}>Como você responde?</div>
-  </div><div style={{fontFamily:"'Crimson Pro',Georgia,serif",fontStyle:"italic",fontSize:14,color:"#E2C485",lineHeight:1.55,padding:"12px 14px",background:"linear-gradient(180deg,#0d1814,#0a0f0c)",border:"1px solid rgba(201,162,75,.35)",borderLeft:"3px solid #C9A24B",borderRadius:10,marginBottom:14}}>"{card.pergunta}"</div><div style={{fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#8a6d2f",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>Escolha o tom da resposta</div>{Object.entries(TONS_POST).map(([k,t])=>(<button key={k} onClick={()=>onEscolha(x=>{const ganhoBase=k==="provocativo"?rnd(800,4000):k==="confiante"?rnd(400,1800):rnd(300,1200);const ganho=ganhoSeguidores(x,ganhoBase);const pBom=k==="provocativo"?0.5:k==="confiante"?0.8:0.85;const desfecho=Math.random()<pBom?"bom":"ruim";const txtDesf=typeof pickDesfechoEntrevista==="function"?pickDesfechoEntrevista(k,desfecho,x.nome):"";let nv={...x,seguidores:Math.max(0,(x.seguidores||30000)+ganho),torcida:clamp((x.torcida||50)+t.efeitos.torcida,0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)+(k==="provocativo"?-3:k==="tecnico"?+1:0),0,100),log:[...x.log,{m:`🎤 Entrevista (${t.nome.toLowerCase()}): +${fmtSeguidores(ganho)} seguidores.${txtDesf?" "+txtDesf:""}`,cat:"midia"}]};return nv;})} style={{display:"flex",alignItems:"center",gap:11,width:"100%",cursor:"pointer",textAlign:"left",background:"linear-gradient(180deg,#0F3B2E,#082720)",border:"1px solid rgba(201,162,75,.35)",borderLeft:`3px solid ${t.cor}`,padding:"10px 12px",marginBottom:7,borderRadius:10,minHeight:48,boxShadow:"inset 0 1px 0 rgba(201,162,75,.1)"}}><div style={{fontSize:20,width:24,textAlign:"center"}}>{t.ic}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:13.5,color:"#F4EFE6",fontFamily:"Oswald,sans-serif",letterSpacing:.3}}>{t.nome}</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#a7d8bd",marginTop:2,letterSpacing:.3,fontVariantNumeric:"tabular-nums"}}>Torcida {t.efeitos.torcida>=0?"+":""}{t.efeitos.torcida} · Moral {t.efeitos.moralElenco>=0?"+":""}{t.efeitos.moralElenco}</div></div><div style={{width:6,height:6,borderRadius:"50%",background:t.cor,boxShadow:`0 0 8px ${t.cor}`}}/></button>))}</div>);}
+  </div><div style={{fontFamily:"'Crimson Pro',Georgia,serif",fontStyle:"italic",fontSize:14,color:"#E2C485",lineHeight:1.55,padding:"12px 14px",background:"linear-gradient(180deg,#0d1814,#0a0f0c)",border:"1px solid rgba(201,162,75,.35)",borderLeft:"3px solid #C9A24B",borderRadius:10,marginBottom:14}}>"{card.pergunta}"</div><div style={{fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#8a6d2f",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>Escolha o tom da resposta</div>{Object.entries(TONS_POST).map(([k,t])=>(<button key={k} onClick={()=>onEscolha(x=>{const ganhoBase=k==="provocativo"?rnd(800,4000):k==="confiante"?rnd(400,1800):rnd(300,1200);const ganho=ganhoSeguidores(x,ganhoBase);const pBom=k==="provocativo"?0.5:k==="confiante"?0.8:0.85;const desfecho=Math.random()<pBom?"bom":"ruim";const txtDesf=typeof pickDesfechoEntrevista==="function"?pickDesfechoEntrevista(k,desfecho,x.nome):"";let nv={...x,seguidores:Math.max(0,(x.seguidores||30000)+ganho),torcida:clamp((x.torcida||50)+t.efeitos.torcida,0,100),imagem:clamp((x.imagem||50)+(t.efeitos.imagem||0),0,100),reputacao:clamp((x.reputacao||0)+(t.efeitos.fama||0),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)+(t.efeitos.relacaoTecnico||0)+(k==="provocativo"?-3:k==="tecnico"?+1:0),0,100),log:[...x.log,{m:`🎤 Entrevista (${t.nome.toLowerCase()}): +${fmtSeguidores(ganho)} seguidores.${txtDesf?" "+txtDesf:""}`,cat:"midia"}]};return nv;})} style={{display:"flex",alignItems:"center",gap:11,width:"100%",cursor:"pointer",textAlign:"left",background:"linear-gradient(180deg,#0F3B2E,#082720)",border:"1px solid rgba(201,162,75,.35)",borderLeft:`3px solid ${t.cor}`,padding:"10px 12px",marginBottom:7,borderRadius:10,minHeight:48,boxShadow:"inset 0 1px 0 rgba(201,162,75,.1)"}}><div style={{fontSize:20,width:24,textAlign:"center"}}>{t.ic}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:13.5,color:"#F4EFE6",fontFamily:"Oswald,sans-serif",letterSpacing:.3}}>{t.nome}</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#a7d8bd",marginTop:2,letterSpacing:.3,fontVariantNumeric:"tabular-nums"}}>Torcida {t.efeitos.torcida>=0?"+":""}{t.efeitos.torcida} · Moral {t.efeitos.moralElenco>=0?"+":""}{t.efeitos.moralElenco}</div></div><div style={{width:6,height:6,borderRadius:"50%",background:t.cor,boxShadow:`0 0 8px ${t.cor}`}}/></button>))}</div>);}
   else if(card.tipo==="evento_midia"){conteudo=(<div style={{textAlign:"center"}}><div style={{fontSize:42}}>{card.ic||"📰"}</div><div style={{fontFamily:"Oswald,sans-serif",color:card.cor||"#fff",fontSize:20,margin:"6px 0"}}>{card.titulo}</div><div style={{fontSize:14,color:"#cbd0d8",marginBottom:14,lineHeight:1.5}}>{card.texto}</div>{card.efeitos&&<div style={{background:"#0d0f13",border:"1px solid #20222a",borderRadius:10,padding:"8px 11px",marginBottom:14,fontSize:11.5,color:"#9aa0aa",textAlign:"left"}}>{Object.entries(card.efeitos).filter(([k,v])=>v!==0).slice(0,5).map(([k,v])=>(<div key={k} style={{padding:"2px 0",color:v>0?"#22c55e":"#fb7185"}}>{k==="seguidores"?"📱 Seguidores":k==="imagem"?"📸 Imagem":k==="torcida"?"🏟️ Torcida":k==="relacaoTecnico"?"🧑‍🏫 Técnico":k==="relacaoClube"?"💼 Clube":k==="moralElenco"?"🧠 Moral elenco":k==="fama"?"⭐ Fama":k==="heatRival"?"⚔️ Rival":k}: {v>0?"+":""}{typeof v==="number"&&v<1&&v>-1?Math.round(v*100)+"%":v}</div>))}</div>}<button onClick={onInfo} style={{...btnPrimary,width:"100%"}}>Entendi</button></div>);}
   else if(card.tipo==="potencial"){const up=card.dir==="up";const e=estimativaPot(vida);conteudo=(<div style={{textAlign:"center"}}><div style={{fontSize:42}}>{up?"🚀":"📉"}</div><div style={{fontSize:10,color:"#8b909a",letterSpacing:1.5,marginTop:6}}>REAVALIAÇÃO DOS OLHEIROS</div><div style={{fontFamily:"Oswald,sans-serif",color:up?"#22c55e":"#ef6b6b",fontSize:21,margin:"4px 0 8px"}}>{up?"Seu teto subiu":"Seu teto foi revisado pra baixo"}</div><div style={{fontSize:13.5,color:"#cbd0d8",lineHeight:1.5,maxWidth:300,margin:"0 auto"}}>{up?"Seu rendimento fez os olheiros reverem pra cima o que você pode chegar a ser. O mercado começa a te enxergar diferente.":"Os olheiros revisaram pra baixo a expectativa sobre você. Dá pra reverter — mas a vitrine ficou mais dura."}</div><div style={{marginTop:12,padding:"8px 11px",background:"#0d0f13",border:"1px solid #20222a",borderRadius:10,fontSize:12,color:"#9aa0aa"}}>Estimativa atual: <b style={{color:"#cbd0d8"}}>{e.tier||""}</b></div><button onClick={onInfo} style={{...btnPrimary,width:"100%",marginTop:14}}>{up?"Vou continuar!":"Vou virar o jogo"}</button></div>);}
   else if(card.tipo==="avaliacao"){const Stars=({n,cor})=>{const full=Math.floor(n||0),half=(n||0)-full>=0.5,empty=5-full-(half?1:0);return <span style={{fontFamily:"Oswald,sans-serif",letterSpacing:1}}><span style={{color:cor,fontSize:16}}>{"★".repeat(full)}{half?"½":""}</span><span style={{color:"#33373f",fontSize:16}}>{"★".repeat(Math.max(0,empty))}</span></span>;};const ca=card.ca||0,pa=card.pa||0;conteudo=(<div style={{textAlign:"center"}}><div style={{fontSize:40}}>📋</div><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20,margin:"6px 0"}}>Relatório anual do olheiro</div><div style={{fontSize:13,color:"#cbd0d8",marginBottom:8}}>{card.cat||"Profissional"} · {card.idade} anos · OVR {card.ovr} {card.delta>0?<span style={{color:"#22c55e"}}>(+{card.delta} no ano)</span>:card.delta<0?<span style={{color:"#f59e0b"}}>({card.delta})</span>:<span style={{color:"#8b909a"}}>(estável)</span>}</div><div style={{display:"flex",gap:8,marginBottom:10}}><div style={{flex:1,background:"#0d0f13",borderRadius:10,padding:"8px 10px"}}><div style={{fontSize:9,color:"#8b909a",letterSpacing:1,marginBottom:3}}>HABILIDADE ATUAL</div><Stars n={ca} cor="#cbd0d8"/><div style={{fontSize:10,color:"#7f8794",marginTop:3}}>{ca}/5</div></div><div style={{flex:1,background:"#0d0f13",borderRadius:10,padding:"8px 10px"}}><div style={{fontSize:9,color:"#8b909a",letterSpacing:1,marginBottom:3}}>POTENCIAL</div>{card.paPrecise?<Stars n={pa} cor="#FFD400"/>:(()=>{const sol=Math.round(card.paMin||0),mx=Math.round(card.paMax||0),maybe=Math.max(0,mx-sol),emp=Math.max(0,5-sol-maybe);return <span style={{fontFamily:"Oswald,sans-serif",fontSize:16,letterSpacing:1}}><span style={{color:"#FFD400"}}>{"★".repeat(sol)}</span><span style={{color:"#6b5a16"}}>{"★".repeat(maybe)}</span><span style={{color:"#33373f"}}>{"★".repeat(emp)}</span></span>;})()}<div style={{fontSize:10,color:"#7f8794",marginTop:3}}>{card.paPrecise?`${pa}/5 (confirmado)`:`~${card.paMin}–${card.paMax}/5 · ${Math.round(card.potRev||0)}% revelado`}</div></div></div><div style={{fontSize:14,color:card.cor,marginBottom:8,fontFamily:"Oswald,sans-serif"}}>Evolução {card.ritmo}</div><div style={{fontSize:12,color:"#8b909a",marginBottom:14,lineHeight:1.5}}>Ponto forte: <b style={{color:"#cbd0d8"}}>{card.forte}</b> · a lapidar: <b style={{color:"#cbd0d8"}}>{card.fraco}</b>{card.esf?` · esforço ${card.esf}`:""}</div><button onClick={onInfo} style={{...btnPrimary,width:"100%"}}>Entendi</button></div>);}
@@ -7831,6 +8364,17 @@ function TecnicoDash({tc,onEscolherClube,onAvancar,onComandar,onProcurar,onSair,
     </div>}
   </div>);
 }
+// FASE A B5: finais humorados quando jogador desistiu (raiz BR, humor de boteco)
+const FINAIS_DESISTENCIA=[
+  "Vira lenda da pelada de domingo no campinho do bairro. Ainda esperam o passe pra ele.",
+  "Largou a chuteira e o boteco da Rosenda nunca mais foi o mesmo. Carteado e papo de futebol garantido.",
+  "Foi vender paçoca na mercearia da Rosenda. Diz que paçoca dá menos cabeçada que zagueiro.",
+  "Virou treinador de varzea — promete que vai 'levantar o time' e bebe a primeira no terceiro tempo.",
+  "Hoje filma cobranças de falta no terreno baldio e posta no story. Tem 47 seguidores e ja se acha craque.",
+  "Comprou um quiosque na praia, vendeu por seis meses, falio. Vive de cobertinhas e pasteis.",
+  "Trabalha no mercado da esquina. Cada cliente ouve a mesma historia: 'eu quase fui pro Flamengo'.",
+];
+function pickFinalDesistencia(){return FINAIS_DESISTENCIA[Math.floor(Math.random()*FINAIS_DESISTENCIA.length)];}
 function FimCarreira({vida,onTecnico,onComprarClube,onReset,onMenu}){
   const [escolheu,setEscolheu]=useState(null);
   const picoOvr=Math.max(vida.ovr,...vida.carreira.map(c=>c.ovr||0));
@@ -7866,6 +8410,10 @@ function FimCarreira({vida,onTecnico,onComprarClube,onReset,onMenu}){
         <h1 style={{...h1,fontSize:26,marginTop:6}}>{vida.desistiu?"Você deixou o futebol":"Carreira encerrada"}</h1>
         <p style={sub}>{vida.nome} · aos {vida.idade} anos</p>
       </div>
+      {vida.desistiu&&(()=>{const txt=(vida.finalDesistencia)||pickFinalDesistencia();return (<div style={{background:"linear-gradient(180deg,#1a1410,#100c08)",border:"1px solid rgba(201,162,75,.4)",borderRadius:12,padding:"14px 16px",marginBottom:14,textAlign:"center"}}>
+        <div style={{fontFamily:"Oswald,sans-serif",color:"#E2C485",fontSize:10,letterSpacing:3,marginBottom:8}}>E ASSIM ACABOU…</div>
+        <p style={{fontFamily:"'Crimson Pro',Georgia,serif",fontStyle:"italic",color:"#F4EFE6",fontSize:15,lineHeight:1.55,margin:0}}>{txt}</p>
+      </div>);})()}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
         <Stat label="Pico OVR" valor={picoOvr} cor="#FFD400"/><Stat label="Jogos" valor={totJogos}/><Stat label="Gols" valor={totGols}/>
       </div>
