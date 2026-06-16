@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Footy Life Manager — Cronograma de Implementação (Virada Raiz)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Crimson+Pro:ital@1&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1410; --ink2:#0F1A14; --green:#0F3B2E; --green2:#082720; --greenLt:#1f7a48;
+    --gold:#C9A24B; --goldLt:#E2C485; --paper:#F4EFE6; --dim:#a7d8bd;
+    --ok:#3fae6b; --warn:#d9a13b; --bad:#c75b4a; --idle:#5f7a6e; --raiz:#FF6A2B;
+    --eng:#5b8def; --vis:#d9a13b; --nar:#3fae6b; --ops:#46b3a8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ink);color:var(--paper);font-family:'Barlow',system-ui,sans-serif;line-height:1.45;
+    background-image:radial-gradient(circle at 50% -10%, rgba(15,59,46,.55), transparent 60%);min-height:100vh;padding:0 0 70px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+  header.bar{border-bottom:1px solid rgba(201,162,75,.25);background:linear-gradient(180deg,var(--green2),transparent);position:sticky;top:0;z-index:20;backdrop-filter:blur(8px)}
+  .bar-in{display:flex;align-items:center;gap:14px;padding:14px 18px;max-width:1180px;margin:0 auto;flex-wrap:wrap}
+  .emblem{width:40px;height:46px;flex:none}
+  .title h1{font-family:'Oswald';font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:1px;line-height:1.05}
+  .title .tag{font-family:'Crimson Pro';font-style:italic;color:var(--goldLt);font-size:14px}
+  .verchip{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chip{font-family:'Oswald';font-size:13px;font-weight:500;padding:5px 11px;border-radius:999px;border:1px solid rgba(201,162,75,.4);color:var(--goldLt);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+  .chip.solid{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+  .chip.raiz{background:var(--raiz);color:#1a0a04;border-color:var(--raiz);font-weight:700}
+
+  .next{background:linear-gradient(135deg,rgba(255,106,43,.16),rgba(15,59,46,.2));border:1px solid var(--raiz);border-radius:14px;padding:15px 18px;margin:22px 0 6px}
+  .next .big{font-family:'Oswald';font-weight:700;text-transform:uppercase;letter-spacing:.8px;font-size:17px;color:#ffb892}
+  .next .sub{font-size:13.5px;color:var(--dim);margin-top:5px}
+  .next .sub b{color:var(--paper)}
+
+  /* barra de progresso geral */
+  .overall{display:flex;align-items:center;gap:16px;margin:18px 0 4px;background:var(--ink2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 18px;flex-wrap:wrap}
+  .overall .lab{font-family:'Oswald';text-transform:uppercase;letter-spacing:1px;font-size:13px;color:var(--goldLt)}
+  .bartrack{flex:1;min-width:200px;height:12px;background:#091210;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+  .barfill{height:100%;width:0;background:linear-gradient(90deg,var(--greenLt),var(--gold));border-radius:999px;transition:width .35s ease}
+  .overall .pct{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--gold);min-width:54px;text-align:right}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 4px;font-size:12px;color:var(--dim)}
+  .legend .grp{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .legend b{font-family:'Oswald';font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--goldLt)}
+  .hint{font-size:12.5px;color:var(--idle);margin:6px 0 0;font-style:italic}
+
+  h2.sec{font-family:'Oswald';font-weight:600;text-transform:uppercase;letter-spacing:1.2px;font-size:16px;color:var(--goldLt);
+    margin:26px 0 6px;padding-bottom:8px;border-bottom:1px solid rgba(201,162,75,.2);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  h2.sec .gate{font-size:10.5px;background:var(--raiz);color:#1a0a04;padding:3px 8px;border-radius:6px;letter-spacing:.6px}
+  h2.sec .pbar{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim);text-transform:none;letter-spacing:0}
+  h2.sec .pbar .mini{width:120px;height:8px;background:#091210;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+  h2.sec .pbar .mini i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--greenLt),var(--gold));transition:width .35s ease}
+  .phase-desc{font-size:13px;color:var(--dim);margin:0 0 14px;line-height:1.5}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin-bottom:8px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}.bar-in .title h1{font-size:17px}}
+
+  .card{background:var(--ink2);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:14px 15px;position:relative;overflow:hidden;cursor:pointer;transition:transform .12s ease,border-color .2s ease,opacity .2s ease;user-select:none}
+  .card:hover{transform:translateY(-2px);border-color:rgba(201,162,75,.4)}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--statuscol,var(--idle));transition:background .2s ease}
+  .card .top{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .card .code{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--ink);background:var(--goldLt);padding:2px 7px;border-radius:6px}
+  .card .ttl{font-family:'Oswald';font-weight:600;font-size:15.5px;line-height:1.15;letter-spacing:.2px}
+  .card .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;align-items:center}
+  .tag{font-family:'Oswald';font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .tg-bug{background:rgba(199,91,74,.2);color:#f0a092} .tg-fast{background:rgba(217,161,59,.18);color:#f0cd8a}
+  .tg-feat{background:rgba(91,141,239,.18);color:#a8c4f5} .tg-cont{background:rgba(63,174,107,.18);color:#8fe0b0}
+  .trk{font-family:'Oswald';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;border-radius:6px}
+  .trk-eng{background:rgba(91,141,239,.15);color:#a8c4f5;border:1px solid rgba(91,141,239,.4)}
+  .trk-vis{background:rgba(217,161,59,.13);color:#f0cd8a;border:1px solid rgba(217,161,59,.4)}
+  .trk-nar{background:rgba(63,174,107,.13);color:#8fe0b0;border:1px solid rgba(63,174,107,.4)}
+  .trk-ops{background:rgba(70,179,168,.13);color:#8ad9d0;border:1px solid rgba(70,179,168,.4)}
+
+  .status{margin-left:auto;font-family:'Oswald';font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:4px 10px;border-radius:999px;display:flex;align-items:center;gap:5px}
+  .st-todo{background:rgba(95,122,110,.18);color:#9fb5aa}
+  .st-doing{background:rgba(217,161,59,.2);color:#f3cd84}
+  .st-done{background:rgba(63,174,107,.2);color:#7fe0a6}
+  .card[data-st="done"]{opacity:.62}
+  .card[data-st="done"] .ttl{text-decoration:line-through;text-decoration-color:rgba(127,224,166,.5)}
+
+  .foot{margin-top:30px;font-size:12.5px;color:var(--idle);border-top:1px solid rgba(255,255,255,.07);padding-top:16px;line-height:1.7}
+  .foot b{color:var(--dim)}
+  .reset{cursor:pointer;color:var(--bad);text-decoration:underline;font-size:12px}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <svg class="emblem" viewBox="0 0 120 140" aria-label="FLM">
+    <polygon points="60,4 63.4,12.6 72.6,12.6 65.2,18.4 67.8,27 60,21.6 52.2,27 54.8,18.4 47.4,12.6 56.6,12.6" fill="#C9A24B"/>
+    <path d="M14 36 L60 28 L106 36 L106 78 C106 102 86 122 60 132 C34 122 14 102 14 78 Z" fill="#0F3B2E" stroke="#C9A24B" stroke-width="2.5"/>
+    <path d="M22 96 L60 102 L98 96 L98 108 L60 114 L22 108 Z" fill="#082720" stroke="#C9A24B" stroke-width="1.4"/>
+    <text x="60" y="86" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="46" fill="#C9A24B">10</text>
+  </svg>
+  <div class="title">
+    <h1>Cronograma de Implementação</h1>
+    <span class="tag">Virada Raiz — consequência, história &amp; várzea</span>
+  </div>
+  <div class="verchip">
+    <span class="chip raiz">🌳 Virada Raiz</span>
+    <span class="chip">base v9.99c</span>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+  <div class="next">
+    <div class="big">▶ Foco agora: Fase A — Núcleo de consequência (GATE do soft launch)</div>
+    <div class="sub">Sem isso o jogo "se joga sozinho". Quando a Fase A fechar, libera o soft launch. Detalhe completo em <b>ESCOPO_RAIZ.md</b>.</div>
+  </div>
+
+  <div class="overall">
+    <span class="lab">Progresso geral</span>
+    <div class="bartrack"><div class="barfill" id="ovfill"></div></div>
+    <span class="pct" id="ovpct">0%</span>
+  </div>
+
+  <div class="legend">
+    <div class="grp"><b>Status:</b> <span class="status st-todo">A fazer</span><span class="status st-doing">Fazendo</span><span class="status st-done">✓ Feito</span></div>
+    <div class="grp"><b>Tipo:</b> <span class="tag tg-bug">bug</span><span class="tag tg-fast">ajuste</span><span class="tag tg-feat">feature</span><span class="tag tg-cont">conteúdo</span></div>
+    <div class="grp"><b>Trilha:</b> <span class="trk trk-eng">Eng</span><span class="trk trk-nar">Narr</span><span class="trk trk-vis">Vis</span><span class="trk trk-ops">Ops</span></div>
+  </div>
+  <p class="hint">👆 Clique num card pra alternar o status (a fazer → fazendo → feito). O progresso fica salvo neste navegador.</p>
+
+  <!-- FASE A -->
+  <h2 class="sec">Fase A — Núcleo de consequência <span class="gate">GATE DO LAUNCH</span>
+    <span class="pbar"><span class="mini"><i data-bar="A"></i></span><span data-lbl="A">0/8</span></span></h2>
+  <p class="phase-desc">O make-or-break. Faz as decisões morderem, o olheiro ser honesto e dá pra fracassar/desistir. É o que destrava o teste fechado.</p>
+  <div class="grid" data-phase="A">
+    <div class="card" data-id="B1" data-st="todo"><div class="top"><span class="code">B1</span><span class="ttl">Tirar a "alternativa obviamente melhor" das decisões</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span><span class="trk trk-nar">Narr</span></div></div>
+    <div class="card" data-id="B2" data-st="todo"><div class="top"><span class="code">B2</span><span class="ttl">Olheiro honesto (relatório e posição pelo real)</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span><span class="trk trk-nar">Narr</span></div></div>
+    <div class="card" data-id="B3" data-st="todo"><div class="top"><span class="code">B3</span><span class="ttl">Consequência escalonada por dificuldade (botão-mestre)</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span></div></div>
+    <div class="card" data-id="B4" data-st="todo"><div class="top"><span class="code">B4</span><span class="ttl">Remover viés de sucesso oculto (probabilidade honesta)</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span></div></div>
+    <div class="card" data-id="B5" data-st="todo"><div class="top"><span class="code">B5</span><span class="ttl">Botão Desistir + "sugestão de desistir" no Difícil</span></div><div class="meta"><span class="tag tg-fast">ajuste</span><span class="trk trk-eng">Eng</span><span class="trk trk-nar">Narr</span></div></div>
+    <div class="card" data-id="B6" data-st="todo"><div class="top"><span class="code">B6</span><span class="ttl">Nota/desempenho refletindo atitude e expulsão</span></div><div class="meta"><span class="tag tg-fast">ajuste</span><span class="trk trk-eng">Eng</span></div></div>
+    <div class="card" data-id="M2" data-st="todo"><div class="top"><span class="code">M2</span><span class="ttl">Todos os estados do Brasil na peneira</span></div><div class="meta"><span class="tag tg-fast">ajuste</span><span class="trk trk-eng">Eng</span></div></div>
+    <div class="card" data-id="Q1" data-st="todo"><div class="top"><span class="code">Q1</span><span class="ttl">Botão Marketing: virar alavanca de imagem (ou remover)</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span><span class="trk trk-ops">Ops</span></div></div>
+  </div>
+
+  <!-- FASE B -->
+  <h2 class="sec">Fase B — Eventos raiz (alma)
+    <span class="pbar"><span class="mini"><i data-bar="B"></i></span><span data-lbl="B">0/2</span></span></h2>
+  <p class="phase-desc">Onda de conteúdo: muitos eventos de vida raiz, bem-humorados, que ramificam e constroem a história do moleque.</p>
+  <div class="grid" data-phase="B">
+    <div class="card" data-id="E1" data-st="todo"><div class="top"><span class="code">E1</span><span class="ttl">Banco de eventos raiz (ramificação + impacto real)</span></div><div class="meta"><span class="tag tg-cont">conteúdo</span><span class="trk trk-nar">Narr</span></div></div>
+    <div class="card" data-id="E2" data-st="todo"><div class="top"><span class="code">E2</span><span class="ttl">Linha do tempo / diário da carreira</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span><span class="trk trk-vis">Vis</span></div></div>
+  </div>
+
+  <!-- FASE C -->
+  <h2 class="sec">Fase C — Economia raiz + avatar
+    <span class="pbar"><span class="mini"><i data-bar="C"></i></span><span data-lbl="C">0/2</span></span></h2>
+  <p class="phase-desc">Itens baratos e raiz com efeito real (chuteira meia-boca, marmita, corte do tio) + montar o avatar do moleque. O dinheiro passa a ter peso.</p>
+  <div class="grid" data-phase="C">
+    <div class="card" data-id="C1" data-st="todo"><div class="top"><span class="code">C1</span><span class="ttl">Itens raiz baratos com efeito real</span></div><div class="meta"><span class="tag tg-feat">feature</span><span class="trk trk-eng">Eng</span></div></div>
+    <div class="card" data-id="C2" data-st="todo"><div class="top"><span class="code">C2</span><span class="ttl">Avatar do moleque + loja raiz (UI)</span></div><div class="meta"><span class="tag tg-cont">conteúdo</span><span class="trk trk-vis">Vis</span><span class="trk trk-eng">Eng</span></div></div>
+  </div>
+
+  <!-- FASE D -->
+  <h2 class="sec">Fase D — Mundo crível
+    <span class="pbar"><span class="mini"><i data-bar="D"></i></span><span data-lbl="D">0/1</span></span></h2>
+  <p class="phase-desc">Liga europeia reconstruída: fictícia mas plausível — mais times, nomes e rivalidades europeus críveis (sem nome real por licença).</p>
+  <div class="grid" data-phase="D">
+    <div class="card" data-id="M1" data-st="todo"><div class="top"><span class="code">M1</span><span class="ttl">Liga europeia fictícia (+times, nomes, rivalidades)</span></div><div class="meta"><span class="tag tg-cont">conteúdo</span><span class="trk trk-nar">Narr</span><span class="trk trk-eng">Eng</span></div></div>
+  </div>
+
+  <div class="foot">
+    <b>Como funciona:</b> o status de cada item fica salvo só neste navegador (localStorage). Conforme as trilhas entregam, é só clicar pra marcar.<br>
+    Escopo e racional completo em <b>ESCOPO_RAIZ.md</b> · sincronização das trilhas em <b>CRONOGRAMA.md</b>.<br>
+    <span style="display:inline-block;margin-top:8px" class="reset" id="reset">↺ zerar todos os status</span>
+  </div>
+</div>
+
+<script>
+  var KEY="flm_crono_raiz";
+  var ORDER=["todo","doing","done"];
+  var LABEL={todo:"A fazer",doing:"Fazendo",done:"✓ Feito"};
+  var STCOL={todo:"var(--idle)",doing:"var(--warn)",done:"var(--ok)"};
+  var STCLS={todo:"st-todo",doing:"st-doing",done:"st-done"};
+
+  function load(){try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};}}
+  function save(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
+
+  var state=load();
+  var cards=[].slice.call(document.querySelectorAll(".card"));
+
+  function paintCard(c){
+    var st=state[c.dataset.id]||"todo";
+    c.dataset.st=st;
+    c.style.setProperty("--statuscol",STCOL[st]);
+    var badge=c.querySelector(".status");
+    if(!badge){badge=document.createElement("span");badge.className="status";c.querySelector(".meta").appendChild(badge);}
+    badge.className="status "+STCLS[st];
+    badge.textContent=LABEL[st];
+  }
+  function val(st){return st==="done"?1:(st==="doing"?0.5:0);}
+
+  function recompute(){
+    var totDone=0,tot=cards.length;
+    var phases={};
+    cards.forEach(function(c){
+      var st=state[c.dataset.id]||"todo";
+      totDone+=val(st);
+      var ph=c.closest(".grid").dataset.phase;
+      phases[ph]=phases[ph]||{d:0,n:0,done:0};
+      phases[ph].n++; phases[ph].d+=val(st); if(st==="done")phases[ph].done++;
+    });
+    var pct=Math.round(totDone/tot*100);
+    document.getElementById("ovfill").style.width=pct+"%";
+    document.getElementById("ovpct").textContent=pct+"%";
+    Object.keys(phases).forEach(function(ph){
+      var p=phases[ph];
+      var bar=document.querySelector('[data-bar="'+ph+'"]');
+      var lbl=document.querySelector('[data-lbl="'+ph+'"]');
+      if(bar)bar.style.width=Math.round(p.d/p.n*100)+"%";
+      if(lbl)lbl.textContent=p.done+"/"+p.n;
+    });
+  }
+
+  cards.forEach(function(c){
+    paintCard(c);
+    c.addEventListener("click",function(){
+      var cur=state[c.dataset.id]||"todo";
+      var nx=ORDER[(ORDER.indexOf(cur)+1)%ORDER.length];
+      state[c.dataset.id]=nx; save(state); paintCard(c); recompute();
+    });
+  });
+  recompute();
+
+  document.getElementById("reset").addEventListener("click",function(){
+    if(confirm("Zerar o status de todos os itens?")){state={};save(state);cards.forEach(paintCard);recompute();}
+  });
+</script>
+</body>
+</html>
