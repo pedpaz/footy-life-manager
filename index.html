@@ -44,7 +44,7 @@
 </script>
 
 <div id="root">
-  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.117 Modo Manager ABERTO no Menu (BETA): botao que entra direto no ManagerGame (tecnico de clube — escala XI, mercado, financas, partidas) pros amigos testarem. Antes so era alcancavel via pos-carreira. · pack</div></div>
+  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.119 Partida 2D INTEGRADA na Carreira: a partida jogavel agora roda o motor 2D (Partida2D via iframe footy-jogavel-adapt.html) no lugar do texto. Rede de seguranca: auto-conclui com resultado-base se o 2D falhar/nao carregar (carreira nunca trava). PartidaInterativa de texto mantida dormente. · pack</div></div>
 </div>
 
 <script type="text/plain" id="bmsrc">
@@ -4620,7 +4620,7 @@ function entrarBaseV(vida,nome,forca,pacote){
   const base={...vida,fase:"base",clube:nome,clubeForca:forca,tier:serieA?"serieA":"base",categoria:cat,salarioMes:bolsa,dinheiro:(vida.dinheiro||0)+(luvas||0),sinergia:pacote?pacote.sinBase:32,anosNoClube:0,capitao:false,faixa:"nenhum",clima:55,elenco:gerarVestiario(forca),torcida:48,reputacao:clamp(vida.reputacao+(pacote?pacote.repBonus:5),0,100),talentoDev:clamp((vida.talentoDev||1)*(1+(pacote?pacote.dev:0)),0.8,1.4),moradia:aloj?"quarto":(vida.moradia||"familia"),log:[...vida.log,{m:msg}]};
   base.rival=rivalDe(base);base.calendario=gerarCalendarioV(base);base.artilharia=gerarArtilhariaV(base);base.liga=gerarLigaV(base);base.elenco=gerarElencoBase(base.categoria,base.ovr);base.moradia=aloj?"alojamento":(vida.moradia||"familia");base.alojCT=!!aloj;base.escolaCT=!!escola;return base;
 }
-const VERSAO="v9.117 Modo Manager ABERTO no Menu (BETA): botao que entra direto no ManagerGame (tecnico de clube — escala XI, mercado, financas, partidas) pros amigos testarem. Antes so era alcancavel via pos-carreira.";
+const VERSAO="v9.119 Partida 2D INTEGRADA na Carreira: a partida jogavel agora roda o motor 2D (Partida2D via iframe footy-jogavel-adapt.html) no lugar do texto. Rede de seguranca: auto-conclui com resultado-base se o 2D falhar/nao carregar (carreira nunca trava). PartidaInterativa de texto mantida dormente.";
 
 /* ===== IMPRENSA FICTÍCIA ===== */
 // Sistema de manchetes movido para data/manchetes.js (Sprint 4.5)
@@ -6254,7 +6254,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
   if(tela==="criacaoTec")return <CriacaoTecnico onCriar={criarTecnicoCustom} onMenu={goMenu} temSave={temSave} onContinuar={carregarTec}/>;
   if(tela==="criacao"&&!vida){const _dev=typeof window!=="undefined"&&window.localStorage&&window.localStorage.getItem("flm_dev")==="1";return <CriacaoVida temSave={temSave} onCriar={criar} onCriarPro={criarPro} onCriarVet={_dev?criarVet:null} onContinuar={carregar} onMenu={goMenu}/>;}
   if(tela==="peneira")return <PeneiraVida vida={vida} tent={tentPeneira} onAssinar={assinarPeneira} onTentar={tentarAnoQueVem} onTrocarPos={(p)=>set({...vida,pos:p,ovr:ovrDe(vida.at,p)})} onMenu={goMenu}/>;
-  if(tela==="partida"&&partida)return <PartidaInterativa vida={vida} partida={partida} setPartida={setPartida} onConcluir={concluirPartida}/>;
+  if(tela==="partida"&&partida)return <Partida2D vida={vida} partida={partida} onConcluir={concluirPartida}/>;
   if(tela==="managing"&&vida){
     if(vida.segCarreira==="dono"&&vida.dono&&vida.dono.clubId){
       return <ManagerGame clubeInicialId={vida.dono.clubId} gsInicial={vida.dono.gsAtual||null} onSair={sairManager} onTemporadaCompleta={concluirManagerDono}/>;
@@ -6629,6 +6629,53 @@ function montarPartida(v){
   const idM=v.idade||21,fisM=(v.at&&v.at.fis)||60,desM=v.desgaste||0;
   const lesaoBeat=clamp(0.011*(v.fragil||1)*(1+clamp(desM-30,0,70)*0.011)*(idM>=31?1+(idM-30)*0.04:1)*(fisM>=85?0.82:1)*(1+clamp(55-fisM,0,40)*0.005),0.004,0.045);
   return {rod,adv,casa,ehRival,advF,pos,ofe,advNum:baseP.adv,us:0,them:0,ev,i:-1,fase:"intro",mentalidade:"equilibrado",energiaJogo:clamp(v.energia!=null?v.energia:85,0,100),notaBase:baseP.nota,notaViva:baseP.nota,golsV:0,assistV:0,duelNome:pick(RIVAL_NOMES),duelPos:(ofe?pick(["ZAG","ZAG","LAT","VOL"]):pick(["ATA","ATA","MEI"])),duelW:0,duelL:0,saiu:false,saiuMin:null,amarelos:0,expulso:false,expulsoMin:null,acumImagem:0,acumTorcida:0,acumReputacao:0,motivacoes:0,provocacoes:0,pedidoSub:false,acumRelacaoClube:0,evtxt:null,evk:null,evic:null,evcol:null,lesaoBeat,lesao:false};
+}
+function Partida2D({vida,partida,onConcluir}){
+  const ref=React.useRef(null);
+  const doneRef=React.useRef(false);
+  React.useEffect(()=>{
+    const finalizar=(res)=>{
+      if(doneRef.current)return; doneRef.current=true;
+      const eu=(res&&res.euStats)||{};
+      const am=eu.amarelos||0, exp=!!(res&&res.expulso);
+      const minutos=(res&&res.minutos!=null)?res.minutos:90;
+      onConcluir({
+        p:{nota:(res&&res.nota!=null)?res.nota:partida.notaBase,gols:eu.gols||0,assist:eu.assist||0,adv:partida.advNum,advNome:partida.adv,casa:partida.casa,amarelos:am,expulso:exp},
+        placar:{us:(res&&res.golsA!=null)?res.golsA:0,them:(res&&res.golsB!=null)?res.golsB:0},
+        minutos,saiu:!!(res&&res.saiu),lesao:!!(res&&res.lesao),expulso:exp,amarelos:am,
+        acumImagem:0,acumTorcida:0,acumReputacao:0,acumRelacaoClube:0
+      });
+    };
+    // Rede de seguranca: resultado-base simulado (carreira nunca trava)
+    const fallback=()=>{
+      if(doneRef.current)return;
+      const sc=placarClubeV(vida.clubeForca,partida.advF,partida.casa,partida.notaBase);
+      finalizar({golsA:sc.gfTeam,golsB:sc.ga,nota:partida.notaBase,euStats:{gols:0,assist:0,amarelos:0},lesao:false,minutos:90});
+    };
+    const ifr=ref.current;
+    let timeout=setTimeout(fallback,9000); // iframe nao carregou / engine nao iniciou
+    const onload=()=>{
+      try{
+        const w=ifr&&ifr.contentWindow;
+        if(!w||typeof w.iniciarPartidaCarreira!=="function"){clearTimeout(timeout);fallback();return;}
+        try{if(w.SOM)w.SOM.on=(localStorage.getItem("flm_audio")!=="muted");}catch(_e){}
+        const badge=clubeBadge(vida.clube),abadge=clubeBadge(partida.adv);
+        const dif={facil:0.8,normal:1,dificil:1.2}[vida.dificuldade]||1;
+        const dados={
+          seu:{nome:vida.nome,time:{name:vida.clube,short:badge.short,cor:badge.c,s:vida.clubeForca},form:"4-3-3",pos:partida.pos||vida.pos,at:vida.at,ovr:vida.ovr,papel:vida.papel},
+          adv:{time:{name:partida.adv,short:abadge.short,cor:abadge.c,s:partida.advF},form:"4-4-2"},
+          dif,banco:vida.papel==="reserva"
+        };
+        clearTimeout(timeout); // engine iniciou: a partida agora esta nas maos do jogador, onFim conclui
+        w.iniciarPartidaCarreira(dados,(r)=>{clearTimeout(timeout);finalizar(r);});
+      }catch(e){clearTimeout(timeout);fallback();}
+    };
+    if(ifr)ifr.addEventListener("load",onload);
+    return ()=>{clearTimeout(timeout);if(ifr)ifr.removeEventListener("load",onload);};
+  },[]);
+  return <div style={{position:"fixed",inset:0,margin:"0 auto",width:"100%",maxWidth:520,background:"#0B1410",zIndex:60}}>
+    <iframe ref={ref} src="footy-jogavel-adapt.html" title="Partida 2D" allow="autoplay" style={{width:"100%",height:"100%",border:"none",display:"block"}}/>
+  </div>;
 }
 function PartidaInterativa({vida,partida,setPartida,onConcluir}){
   // SFX (sn5 final): whistle_start no inicio + card_yellow/red por beat + goal/goal_against por evento + win/lose/whistle_end no fim
@@ -9013,25 +9060,15 @@ function Menu({setModo}){
         <div style={{fontFamily:"'Crimson Pro',Georgia,serif",fontStyle:"italic",fontSize:14,color:"#a7d8bd",marginTop:8,letterSpacing:.3}}>Da peneira à lenda.</div>
         <div style={{width:54,height:2,background:"linear-gradient(90deg,#0F3B2E,#C9A24B,#0F3B2E)",borderRadius:2,margin:"14px auto 0"}}/>
       </div>
-      <button onClick={()=>window.alert(typeof pickEmBreve==="function"?pickEmBreve("tecnico"):"Modo Treinador chegando.")} className="bm-pop" style={{...modoCard,background:"linear-gradient(135deg,#0e1116,#0a0c10)",borderColor:"rgba(201,162,75,.35)",position:"relative",overflow:"hidden"}}>
-        <div style={{filter:"blur(.4px)",opacity:.5,display:"flex",alignItems:"center",gap:14,width:"100%"}}>
-          <div style={{width:46,height:46,borderRadius:13,background:"rgba(201,162,75,.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(201,162,75,.2)"}}><ClipboardList size={26} color="rgba(201,162,75,.7)"/></div>
-          <div style={{textAlign:"left",flex:1}}>
-            <div style={{fontFamily:"Oswald,sans-serif",color:"#F4EFE6",fontSize:20}}>Modo Treinador</div>
-            <div style={{fontSize:12,color:"#a7d8bd",marginTop:2}}>Crie seu técnico, negocie contrato e comande um clube.</div>
-          </div>
-        </div>
-        <SeloEmBreve hint="Viva a Carreira até a aposentadoria pra desbloquear."/>
+      <button onClick={()=>_setModoComAudio("treinador")} className="bm-pop" style={{...modoCard,background:"linear-gradient(135deg,#241a0a,#15100a)",borderColor:"#C9A24B",boxShadow:"0 18px 40px -22px rgba(201,162,75,.5)"}}>
+        <div style={{width:46,height:46,borderRadius:13,background:"rgba(201,162,75,.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(201,162,75,.3)"}}><ClipboardList size={26} color="#E2C485"/></div>
+        <div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20}}>Modo Treinador <span style={{fontSize:10,letterSpacing:1.5,color:"#E2C485",border:"1px solid rgba(201,162,75,.5)",borderRadius:20,padding:"2px 7px",marginLeft:4,verticalAlign:"middle"}}>BETA</span></div><div style={{fontSize:12,color:"#a7d8bd",marginTop:2}}>Crie seu técnico, negocie contrato e comande um clube.</div></div>
+        <ChevronRight color="#E2C485"/>
       </button>
       <button onClick={()=>_setModoComAudio("jogador")} className="bm-pop" style={{...modoCard,background:"linear-gradient(135deg,#0F3B2E,#082720)",borderColor:"#C9A24B",marginTop:14,boxShadow:"0 18px 40px -22px rgba(201,162,75,.55)"}}>
         <div style={{width:46,height:46,borderRadius:13,background:"rgba(34,197,94,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(34,197,94,.3)"}}><Activity size={26} color="#34d671"/></div>
         <div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20}}>Modo Carreira</div><div style={{fontSize:12,color:"#a7d8bd",marginTop:2}}>Viva a vida de um jogador: da peneira ao auge — e além das chuteiras.</div></div>
         <ChevronRight color="#34d671"/>
-      </button>
-      <button onClick={()=>_setModoComAudio("manager")} className="bm-pop" style={{...modoCard,background:"linear-gradient(135deg,#10233a,#0a1422)",borderColor:"#5b8def",marginTop:14,boxShadow:"0 18px 40px -22px rgba(91,141,239,.5)"}}>
-        <div style={{width:46,height:46,borderRadius:13,background:"rgba(91,141,239,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(91,141,239,.3)"}}><Shield size={26} color="#7ea6f5"/></div>
-        <div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20}}>Modo Manager <span style={{fontSize:10,letterSpacing:1.5,color:"#7ea6f5",border:"1px solid rgba(91,141,239,.5)",borderRadius:20,padding:"2px 7px",marginLeft:4,verticalAlign:"middle"}}>BETA</span></div><div style={{fontSize:12,color:"#a7d8bd",marginTop:2}}>Comande um clube: escale o XI, mercado, finanças e partidas ao vivo.</div></div>
-        <ChevronRight color="#7ea6f5"/>
       </button>
       <button onClick={()=>setShowHall(true)} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginTop:18,padding:"12px",minHeight:48,background:"linear-gradient(180deg, rgba(201,162,75,.12), rgba(201,162,75,.04))",border:"1px solid rgba(201,162,75,.35)",borderRadius:12,color:"#E2C485",fontFamily:"Oswald,sans-serif",fontSize:13,letterSpacing:2,textTransform:"uppercase",fontWeight:700,cursor:"pointer",boxShadow:"inset 0 1px 0 rgba(201,162,75,.12), 0 8px 22px -16px rgba(201,162,75,.4)"}}><Trofeu size={18} glow={false}/> Hall da Fama {hallList.length>0?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"#C9A24B",letterSpacing:.5,fontVariantNumeric:"tabular-nums"}}>{hallList.length}/5</span>:null}</button>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,marginTop:18}}><div style={{display:"inline-flex",alignItems:"center",gap:7,opacity:.9}}><svg viewBox="0 0 88 90" width="15" height="15" aria-hidden="true"><path d="M44 4 Q80 4 80 40 Q80 70 44 86 Q8 70 8 40 Q8 4 44 4 Z" fill="none" stroke="#FF6A2B" strokeWidth="9" strokeLinejoin="round"/><path d="M48 22 L34 48 L46 48 L40 70 L60 40 L48 40 Z" fill="#FF6A2B"/></svg><span style={{fontFamily:"Oswald,sans-serif",fontSize:11,letterSpacing:2,color:"#9a8f7a"}}>uma <span style={{color:"#C9A24B"}}>ROCKER LAB</span> game</span></div><div style={{fontSize:11,color:"#727b87",fontFamily:"Oswald,sans-serif",letterSpacing:1}}>Footy Life Manager · {VERSAO}</div></div>
