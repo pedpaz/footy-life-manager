@@ -44,7 +44,7 @@
 </script>
 
 <div id="root">
-  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.107 FASE A B1 estendido - TONS_POST sem dominancia. Cada tom de post/entrevista agora tem GANHO E CUSTO: (1) Confiante torcida+2 moralElenco+1 patroBoost+0.05 MAS imagem-1 (pode parecer arrogante). (2) Humilde torcida+3 moralElenco+3 patroBoost+0.02 MAS fama-1 (humildade nao constroi mito). (3) Provocativo torcida+1 patroBoost+0.10 MAS moralElenco-2 imagem-3 relacaoTecnico-1 (alto risco / alta recompensa). (4) Tecnico/serio torcida+1 moralElenco+2 patroBoost+0.03 com flag de menor engajamento. Aplicadores em postarRede e jornalista entrevista pos-jogo plugados com os campos novos (imagem fama relacaoTecnico vindo do t.efeitos). MOM_OFE/MOM_DEF e EVENTOS_MIDIA auditados - ja tem tradeoff inerente. · pack</div></div>
+  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.117 Modo Manager ABERTO no Menu (BETA): botao que entra direto no ManagerGame (tecnico de clube — escala XI, mercado, financas, partidas) pros amigos testarem. Antes so era alcancavel via pos-carreira. · pack</div></div>
 </div>
 
 <script type="text/plain" id="bmsrc">
@@ -333,6 +333,125 @@ const EPILOGOS_CARREIRA={
 function pickEpilogo(nivel){
   const pool=EPILOGOS_CARREIRA[nivel]||EPILOGOS_CARREIRA.craque;
   return pool[Math.floor(Math.random()*pool.length)];
+}
+
+
+// === data/europa.js ===
+// data/europa.js — Liga europeia fictícia (Fase D M1) — Narrativa v9.100-ns5
+// Concatenado no bmsrc pelo pack.mjs. CONST PURO — sem export.
+//
+// SUBSTITUI a const EUROPA_FICT do monólito (linha ~1740).
+// Resolve queixas de playtest:
+//   1) Nomes reais → risco de licença. Aqui tudo é FICTÍCIO mas plausível.
+//   2) "Benfica rival do Arsenal" → rival agora é SEMPRE da mesma liga.
+//   3) Poucos times (10) → 30 clubes em 6 ligas com derbies regionais.
+//
+// Shape estendida (Eng adapta lookups em forcaClubeV, clubeBadge, rivalDe):
+//   nome   — string única
+//   forca  — 76..94 (escala original mantida)
+//   cor1   — primária (badge fundo)
+//   cor2   — secundária (badge texto)
+//   liga   — "ENG" | "ESP" | "ITA" | "GER" | "FRA" | "POR"
+//   rival  — nome do rival principal (null se solitário na liga)
+//
+// Compatibilidade retroativa: pra Eng converter pro shape array antigo se quiser,
+// usar EUROPA_FICT.map(c => [c.nome, c.forca, c.cor1, c.cor2]) — mas perde liga/rival.
+
+const EUROPA_LIGAS={
+  ENG:{nome:"Premier League", regiao:"Inglaterra", forcaMedia:88},
+  ESP:{nome:"Liga Espanhola", regiao:"Espanha",    forcaMedia:87},
+  ITA:{nome:"Calcio",         regiao:"Itália",     forcaMedia:85},
+  GER:{nome:"Bundesliga",     regiao:"Alemanha",   forcaMedia:86},
+  FRA:{nome:"Liga Francesa",  regiao:"França",     forcaMedia:84},
+  POR:{nome:"Primeira Liga",  regiao:"Portugal",   forcaMedia:81},
+};
+
+const EUROPA_FICT=[
+  // ============ INGLATERRA (6 — Premier fictícia) ============
+  {nome:"Royal London FC",     forca:94, cor1:"#C8102E", cor2:"#fff",    liga:"ENG", rival:"Westmere United"},
+  {nome:"Westmere United",     forca:92, cor1:"#1B458F", cor2:"#fff",    liga:"ENG", rival:"Royal London FC"},
+  {nome:"Northbridge City",    forca:90, cor1:"#6CABDD", cor2:"#0a2a3a", liga:"ENG", rival:"Hammerton Wanderers"},
+  {nome:"Hammerton Wanderers", forca:88, cor1:"#DA291C", cor2:"#FBE122", liga:"ENG", rival:"Northbridge City"},
+  {nome:"Ashford Athletic",    forca:86, cor1:"#000000", cor2:"#fff",    liga:"ENG", rival:"Stonebrook Rovers"},
+  {nome:"Stonebrook Rovers",   forca:84, cor1:"#274488", cor2:"#fff",    liga:"ENG", rival:"Ashford Athletic"},
+
+  // ============ ESPANHA (5 — La Liga fictícia) ============
+  {nome:"Real Castilla",       forca:93, cor1:"#FEBE10", cor2:"#0a0a0a", liga:"ESP", rival:"Atlético Mariné"},
+  {nome:"Atlético Mariné",     forca:89, cor1:"#CB3524", cor2:"#fff",    liga:"ESP", rival:"Real Castilla"},
+  {nome:"CF Andaluz",          forca:86, cor1:"#A50044", cor2:"#FFCC00", liga:"ESP", rival:"Sporting de Vega"},
+  {nome:"Sporting de Vega",    forca:84, cor1:"#0a4d9e", cor2:"#fff",    liga:"ESP", rival:"CF Andaluz"},
+  {nome:"Deportivo Catalonia", forca:82, cor1:"#005BAC", cor2:"#fff",    liga:"ESP", rival:null},
+
+  // ============ ITÁLIA (5 — Calcio fictício) ============
+  {nome:"AC Milanese",         forca:91, cor1:"#FB090B", cor2:"#000",    liga:"ITA", rival:"Calcio Veneto"},
+  {nome:"Calcio Veneto",       forca:87, cor1:"#0068A8", cor2:"#fff",    liga:"ITA", rival:"AC Milanese"},
+  {nome:"AS Torinese",         forca:85, cor1:"#1a1a1a", cor2:"#fff",    liga:"ITA", rival:"FC Romagna"},
+  {nome:"FC Romagna",          forca:83, cor1:"#7B1E3B", cor2:"#FFC72C", liga:"ITA", rival:"AS Torinese"},
+  {nome:"Inter Sicilia",       forca:81, cor1:"#003E7E", cor2:"#fff",    liga:"ITA", rival:null},
+
+  // ============ ALEMANHA (5 — Bundesliga fictícia) ============
+  {nome:"Bayern Schwarzwald",  forca:92, cor1:"#DC052D", cor2:"#fff",    liga:"GER", rival:"Borussia Rheinstadt"},
+  {nome:"Borussia Rheinstadt", forca:88, cor1:"#FDE100", cor2:"#000",    liga:"GER", rival:"Bayern Schwarzwald"},
+  {nome:"Eintracht Bavaria",   forca:86, cor1:"#E1000F", cor2:"#000",    liga:"GER", rival:"FC Hansa Nord"},
+  {nome:"FC Hansa Nord",       forca:84, cor1:"#0c4a6e", cor2:"#fff",    liga:"GER", rival:"Eintracht Bavaria"},
+  {nome:"RB Leipfeld",         forca:82, cor1:"#DD0741", cor2:"#fff",    liga:"GER", rival:null},
+
+  // ============ FRANÇA (4 — Ligue fictícia) ============
+  {nome:"Paris-Sud SC",        forca:91, cor1:"#0b1733", cor2:"#fff",    liga:"FRA", rival:"Olympique Marítimo"},
+  {nome:"Olympique Marítimo",  forca:86, cor1:"#27ace2", cor2:"#fff",    liga:"FRA", rival:"Paris-Sud SC"},
+  {nome:"AS Lyonais",          forca:83, cor1:"#152244", cor2:"#fff",    liga:"FRA", rival:"RC Provençal"},
+  {nome:"RC Provençal",        forca:80, cor1:"#005B9F", cor2:"#fff",    liga:"FRA", rival:"AS Lyonais"},
+
+  // ============ PORTUGAL (5 — Primeira Liga fictícia) ============
+  {nome:"Sporting Lusitano",   forca:86, cor1:"#008550", cor2:"#fff",    liga:"POR", rival:"Real Lisboeta"},
+  {nome:"Real Lisboeta",       forca:84, cor1:"#E00020", cor2:"#fff",    liga:"POR", rival:"Sporting Lusitano"},
+  {nome:"Académica do Porto",  forca:81, cor1:"#1d3d6e", cor2:"#fff",    liga:"POR", rival:"CD Atlântico"},
+  {nome:"CD Atlântico",        forca:78, cor1:"#003E7E", cor2:"#FFD500", liga:"POR", rival:"Académica do Porto"},
+  {nome:"FC Aveirense",        forca:76, cor1:"#fb7185", cor2:"#fff",    liga:"POR", rival:null},
+];
+
+// ============================================================
+// Helpers (Eng pluga onde precisar — substituem lookups antigos)
+// ============================================================
+
+// Lookup direto (substitui o "EUROPA_FICT.find(x=>x[0]===nome)" em forcaClubeV).
+function getClubeEuropa(nome){
+  return EUROPA_FICT.find(c=>c.nome===nome)||null;
+}
+
+// Força do clube europeu (substitui o índice [1] do array antigo).
+function forcaEuropa(nome){
+  const c=getClubeEuropa(nome);
+  return c?c.forca:80;
+}
+
+// Rival do mesmo clube europeu — SEMPRE da mesma liga. Se rival declarado, retorna direto;
+// senão sorteia outro da mesma liga (determinístico por nome pra estabilidade entre saves).
+// Substitui o pool aberto de rivalDe quando v.continente==="Europa".
+function pickRivalEuropa(nome){
+  const clube=getClubeEuropa(nome);
+  if(!clube)return null;
+  if(clube.rival)return clube.rival;
+  const mesma=EUROPA_FICT.filter(c=>c.liga===clube.liga&&c.nome!==nome);
+  if(!mesma.length)return null;
+  // hash determinístico — mesmo save retorna o mesmo rival
+  let h=0;for(let i=0;i<nome.length;i++)h=(h*31+nome.charCodeAt(i))|0;
+  return mesma[Math.abs(h)%mesma.length].nome;
+}
+
+// Lista clubes de uma liga (útil pra montar tabelas, sondagens regionais, etc.).
+function clubesEuropaPorLiga(liga){
+  return EUROPA_FICT.filter(c=>c.liga===liga);
+}
+
+// Lista nomes de todos os clubes europeus (substitui EUROPA_FICT.map(e=>e[0])).
+function nomesClubesEuropa(){
+  return EUROPA_FICT.map(c=>c.nome);
+}
+
+// Info da liga pelo ID ("ENG" → {nome:"Premier League", ...}).
+function getLigaEuropa(ligaId){
+  return EUROPA_LIGAS[ligaId]||null;
 }
 
 
@@ -1145,6 +1264,40 @@ function fraseDePersonalidade(cenario,personalidade){
 
 
 
+// === data/itens-raiz.js ===
+// data/itens-raiz.js — Banco de itens raiz baratos (Fase C C1). CONST PURO, SEM export.
+// Item: {ic, nome, cat, custo, tipo, slot?, ef}
+//   cat: "chuteira" | "alimentacao" | "visual" | "equipamento"
+//   tipo: "durable" (equipavel ocupa slot) | "consumivel" (uso unico aplica e gasta)
+//   slot: pra duraveis - "chuteira" | "corte" | "caneleira" | "meiao" (so 1 por slot equipado)
+//   ef: efeitos diretos no estado (mesmos do EVENTOS_RAIZ). Para duraveis, efeitos passivos passam a contar enquanto equipado.
+const ITENS_RAIZ={
+  // ==== Chuteiras (slot:chuteira) — afetam risco_lesao e desempenho ====
+  chuteira_furada:{ic:"👞",nome:"Chuteira meia-boca",cat:"chuteira",custo:300,tipo:"durable",slot:"chuteira",ef:{risco_lesao:+1.5,nota:-0.05,log:"Vestiu a chuteira velha de novo — daria pra outra rachao."}},
+  chuteira_basica:{ic:"👟",nome:"Chuteira de campo basica",cat:"chuteira",custo:1200,tipo:"durable",slot:"chuteira",ef:{risco_lesao:-0.3,log:"Chuteira nova: pegada firme."}},
+  society_pro:{ic:"⚽",nome:"Society profissional",cat:"chuteira",custo:3000,tipo:"durable",slot:"chuteira",ef:{nota:+0.10,risco_lesao:-0.6,log:"Society de couro — solada de aderencia."}},
+  campo_pro:{ic:"🥾",nome:"Chuteira de campo profissional",cat:"chuteira",custo:7000,tipo:"durable",slot:"chuteira",ef:{nota:+0.18,risco_lesao:-1.0,imagem:+1,log:"Chuteira FG profissional — diferenca de patamar."}},
+  // ==== Equipamento de protecao (slot:caneleira / meiao) ====
+  caneleira_basica:{ic:"🛡️",nome:"Caneleira",cat:"equipamento",custo:225,tipo:"durable",slot:"caneleira",ef:{risco_lesao:-0.4,log:"Caneleira no lugar."}},
+  caneleira_pro:{ic:"🛡️",nome:"Caneleira reforcada",cat:"equipamento",custo:700,tipo:"durable",slot:"caneleira",ef:{risco_lesao:-0.8,log:"Caneleira reforcada protege tibia."}},
+  meiao_compr:{ic:"🧦",nome:"Meiao de compressao",cat:"equipamento",custo:400,tipo:"durable",slot:"meiao",ef:{risco_lesao:-0.3,energia:+1,log:"Meiao de compressao — panturrilha agradece."}},
+  // ==== Alimentacao / suplementos (consumivel - aplica e gasta) ====
+  marmita_caseira:{ic:"🍱",nome:"Marmita da mae",cat:"alimentacao",custo:62,tipo:"consumivel",ef:{energia:+12,moral:+3,relacaoFamilia:+1,log:"Marmita da mae — afeto cabe na lancheira."}},
+  suplemento_farmacia:{ic:"💊",nome:"Suplemento da farmacia",cat:"alimentacao",custo:950,tipo:"consumivel",ef:{energia:+18,log:"Suplemento basico ajudou na recuperacao."}},
+  isotonico:{ic:"🥤",nome:"Isotonico/agua de coco",cat:"alimentacao",custo:35,tipo:"consumivel",ef:{energia:+6,log:"Hidratou direito."}},
+  pao_com_ovo:{ic:"🥪",nome:"Pao com ovo do tio",cat:"alimentacao",custo:30,tipo:"consumivel",ef:{energia:+5,moral:+2,log:"Cafe da manha de campeao do bairro."}},
+  acai_500ml:{ic:"🍨",nome:"Acai 500ml",cat:"alimentacao",custo:55,tipo:"consumivel",ef:{energia:+8,moral:+2,log:"Acai depois do treino — combustivel BR."}},
+  // ==== Visual / corte (consumivel) ====
+  corte_tio:{ic:"💈",nome:"Corte do tio do bairro",cat:"visual",custo:75,tipo:"consumivel",ef:{imagem:+3,moral:+2,log:"Corte do tio: barato mas resolve."}},
+  corte_caprichado:{ic:"✂️",nome:"Corte caprichado",cat:"visual",custo:300,tipo:"consumivel",ef:{imagem:+8,moral:+3,seguidores:0.02,log:"Corte caprichado pra foto: foi pras stories."}},
+  treta_design:{ic:"🎨",nome:"Tatu/design da moda",cat:"visual",custo:1500,tipo:"consumivel",ef:{imagem:+12,seguidores:0.04,disciplina:-2,log:"Tatu novo viralizou — moleque corre atras de copiar."}},
+  // ==== Equipamento de treino (consumivel) ====
+  bola_treino:{ic:"⚽",nome:"Bola da pelada",cat:"equipamento",custo:450,tipo:"consumivel",ef:{atributos:{tecnica:+1},energia:-3,log:"Treino extra no quintal com bola nova."}},
+  cone_kit:{ic:"🚧",nome:"Kit de cones do mercado",cat:"equipamento",custo:225,tipo:"consumivel",ef:{atributos:{velocidade:+1},energia:-4,log:"Treino de cones no campinho — explosao subiu."}},
+};
+function listarItensRaiz(){return Object.entries(ITENS_RAIZ).map(([id,it])=>({id,...it}));}
+
+
 // === data/loading-tips.js ===
 // data/loading-tips.js — Pool de dicas mostradas em telas de carregamento (Narrativa v9.65-ns1)
 // Concatenado no bmsrc pelo pack.mjs. Substitui o placeholder "Carregando…" nas linhas 625 e 4274 do monólito.
@@ -1413,6 +1566,82 @@ function pickDesfechoEntrevista(tom,desfecho,nome){
 }
 
 
+// === data/momentos-semana.js ===
+// data/momentos-semana.js — "Momento da semana" (loop do dia a dia)
+// Concatenado no bmsrc pelo pack.mjs. CONST PURO — sem export.
+//
+// Aparece ~1/3 das semanas (de vez em quando), como um card de ESCOLHA com TRADEOFF visível.
+// Cada opção mostra no rótulo o que tende a custar/render. Os negativos escalam pela dificuldade (sev).
+// fn referencia clamp/rnd/dificV (globais do bundle em runtime). Usa só campos seguros (energia, moral,
+// desgaste, relacaoTecnico/Clube, clima, imagem, dinheiro, felicidade, lesaoSemanas) — nada de atributos.
+
+const MOMENTOS_SEMANA=[
+  { id:"faltas", cond:v=>v.fase!=="peneira"&&(v.energia||100)>=35, card:v=>({
+    tipo:"escolha", titulo:"🎯 Fica pra bater faltas?",
+    texto:"Depois do coletivo, o técnico chamou um grupo pra treinar bola parada. Topa ficar?",
+    opcoes:[
+      {label:"Ficar e suar — técnico curte, mas cansa o corpo", fn:x=>({...x,energia:clamp((x.energia||100)-rnd(6,12),0,100),desgaste:clamp((x.desgaste||0)+rnd(3,7),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)+rnd(2,5),0,100),log:[...x.log,{m:"🎯 Ficou batendo faltas — o técnico anotou o empenho.",cat:"treino"}]})},
+      {label:"Ir descansar — recupera, mas perde a chance", fn:x=>({...x,energia:clamp((x.energia||100)+rnd(3,7),0,100),log:[...x.log,{m:"Foi pra casa descansar em vez de treinar extra.",cat:"treino"}]})},
+    ]}) },
+
+  { id:"elenco_sai", cond:v=>v.fase==="profissional"&&(v.idade||18)>=17, card:v=>({
+    tipo:"escolha", titulo:"🍻 O elenco vai sair",
+    texto:"Os caras vão relaxar fora numa noite de folga e te chamaram. E aí?",
+    opcoes:[
+      {label:"Ir junto — entrosa com o grupo, mas tira o foco", fn:x=>{const sev=dificV(x).sev||1;const ruim=Math.random()<0.30*sev;return ruim?{...x,clima:clamp((x.clima||60)+rnd(3,7),0,100),energia:clamp((x.energia||100)-rnd(8,14),0,100),imagem:clamp((x.imagem||50)-rnd(2,7),0,100),log:[...x.log,{m:"🍻 Saiu com o elenco — entrosou, mas a noite rendeu foto que pegou mal.",cat:"vida"}]}:{...x,clima:clamp((x.clima||60)+rnd(5,10),0,100),moral:clamp((x.moral||60)+rnd(3,6),0,100),energia:clamp((x.energia||100)-rnd(5,9),0,100),log:[...x.log,{m:"🍻 Saiu com o elenco e estreitou laços no vestiário.",cat:"vida"}]};}},
+      {label:"Ficar em casa — chega inteiro, mas fica de fora", fn:x=>({...x,energia:clamp((x.energia||100)+rnd(2,5),0,100),moral:clamp((x.moral||60)+rnd(1,3),0,100),clima:clamp((x.clima||60)-rnd(0,2),0,100),log:[...x.log,{m:"Ficou em casa enquanto o elenco saiu — foco mantido.",cat:"vida"}]})},
+    ]}) },
+
+  { id:"repuxo", cond:v=>v.fase!=="peneira"&&(v.desgaste||0)>=40&&!v.lesaoSemanas, card:v=>({
+    tipo:"escolha", titulo:"😣 Um repuxo na coxa",
+    texto:"Sentiu um incômodo na coxa no treino. Não é nada... ou é?",
+    opcoes:[
+      {label:"Forçar e seguir — não perde ritmo, mas arrisca lesão", fn:x=>{const sev=dificV(x).sev||1;if(Math.random()<0.32*sev){const sem=rnd(2,4);return {...x,lesaoSemanas:sem,moral:clamp((x.moral||60)-rnd(4,8),0,100),log:[...x.log,{m:`🤕 Forçou a coxa e estourou — lesionado por ${sem} semanas.`,cat:"lesao"}]};}return {...x,desgaste:clamp((x.desgaste||0)+rnd(4,8),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)+rnd(1,3),0,100),log:[...x.log,{m:"💪 Forçou, segurou o tranco e seguiu treinando.",cat:"treino"}]};}},
+      {label:"Poupar — protege o corpo, mas treina menos", fn:x=>({...x,desgaste:clamp((x.desgaste||0)-rnd(8,14),0,100),energia:clamp((x.energia||100)+rnd(2,5),0,100),log:[...x.log,{m:"Pegou leve pra proteger a coxa.",cat:"treino"}]})},
+    ]}) },
+
+  { id:"festa", cond:v=>(v.idade||16)>=16&&v.fase!=="peneira", card:v=>({
+    tipo:"escolha", titulo:"🎉 Rolê de fim de semana",
+    texto:"Os amigos do bairro vão fazer um churrasco com festa depois. Você vai?",
+    opcoes:[
+      {label:"Ir e relaxar — alegria garantida, risco de exagero", fn:x=>{const sev=dificV(x).sev||1;if(Math.random()<0.28*sev)return {...x,felicidade:clamp((x.felicidade||60)+rnd(4,8),0,100),energia:clamp((x.energia||100)-rnd(8,14),0,100),imagem:clamp((x.imagem||50)-rnd(4,9),0,100),log:[...x.log,{m:"🎉 A festa passou do ponto e vazou vídeo — imagem arranhada.",cat:"vida"}]};return {...x,felicidade:clamp((x.felicidade||60)+rnd(6,11),0,100),moral:clamp((x.moral||60)+rnd(3,6),0,100),energia:clamp((x.energia||100)-rnd(4,8),0,100),log:[...x.log,{m:"🎉 Curtiu o churrasco com a galera e recarregou a cabeça.",cat:"vida"}]};}},
+      {label:"Passar — fica afiado, mas a cabeça pesa", fn:x=>({...x,energia:clamp((x.energia||100)+rnd(2,5),0,100),desgaste:clamp((x.desgaste||0)-rnd(2,5),0,100),felicidade:clamp((x.felicidade||60)-rnd(1,4),0,100),log:[...x.log,{m:"Abriu mão do rolê pra focar no jogo.",cat:"vida"}]})},
+    ]}) },
+
+  { id:"moleque", cond:v=>v.fase==="profissional", card:v=>({
+    tipo:"escolha", titulo:"👦 Um moleque da base te procura",
+    texto:"Um garoto da base, nervoso pra estrear, pediu um conselho seu.",
+    opcoes:[
+      {label:"Apadrinhar — vestiário te respeita, custa seu tempo", fn:x=>({...x,clima:clamp((x.clima||60)+rnd(4,8),0,100),moral:clamp((x.moral||60)+rnd(2,5),0,100),energia:clamp((x.energia||100)-rnd(2,5),0,100),log:[...x.log,{m:"👦 Deu a real pro moleque da base — virou referência no grupo.",cat:"vida"}]})},
+      {label:"Mandar focar no próprio jogo", fn:x=>({...x,log:[...x.log,{m:"Mandou o moleque se virar e foi treinar.",cat:"vida"}]})},
+    ]}) },
+
+  { id:"familia", cond:v=>v.fase!=="peneira"&&(v.dinheiro||0)>=2000, card:v=>({
+    tipo:"escolha", titulo:"🏠 A conta de casa chegou",
+    texto:"Sua mãe ligou: as contas apertaram esse mês. Você ajuda?",
+    opcoes:[
+      {label:"Mandar uma grana — pesa no bolso, alivia o coração", fn:x=>{const v2=Math.min(x.dinheiro,rnd(1500,5000));return {...x,dinheiro:(x.dinheiro||0)-v2,felicidade:clamp((x.felicidade||60)+rnd(4,8),0,100),moral:clamp((x.moral||60)+rnd(2,5),0,100),log:[...x.log,{m:`🏠 Mandou ${fmtDin?fmtDin(v2):v2} pra ajudar em casa — moral em dia com a família.`,cat:"vida"}]};}},
+      {label:"Segurar agora — guarda o dinheiro, mas fica o peso", fn:x=>({...x,felicidade:clamp((x.felicidade||60)-rnd(3,7),0,100),log:[...x.log,{m:"Não deu pra ajudar em casa dessa vez — ficou a sensação ruim.",cat:"vida"}]})},
+    ]}) },
+
+  { id:"publi", cond:v=>v.fase==="profissional"&&(v.reputacao||0)>=30, card:v=>({
+    tipo:"escolha", titulo:"📸 Publi relâmpago",
+    texto:"Seu agente ligou com uma publi rápida pra gravar nesta semana. Topa?",
+    opcoes:[
+      {label:"Topar — grana e imagem, mas rouba foco do treino", fn:x=>{const cache=rnd(4000,18000);return {...x,dinheiro:(x.dinheiro||0)+cache,imagem:clamp((x.imagem||50)+rnd(2,5),0,100),energia:clamp((x.energia||100)-rnd(4,8),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)-rnd(0,3),0,100),log:[...x.log,{m:`📸 Gravou uma publi (+${fmtDin?fmtDin(cache):cache}) — bom pro bolso, tirou da rotina.`,cat:"midia"}]};}},
+      {label:"Recusar — foco total no jogo", fn:x=>({...x,relacaoTecnico:clamp((x.relacaoTecnico||60)+rnd(1,3),0,100),log:[...x.log,{m:"Recusou a publi pra manter o foco no campo.",cat:"midia"}]})},
+    ]}) },
+
+  { id:"poupar", cond:v=>v.fase==="profissional"&&(v.desgaste||0)>=55, card:v=>({
+    tipo:"escolha", titulo:"🥵 Corpo no limite",
+    texto:"Maratona de jogos, o corpo pede trégua. O técnico deixa a seu critério.",
+    opcoes:[
+      {label:"Pedir pra poupar — recupera, mas perde minutos", fn:x=>({...x,desgaste:clamp((x.desgaste||0)-rnd(14,22),0,100),energia:clamp((x.energia||100)+rnd(6,12),0,100),relacaoClube:clamp((x.relacaoClube||60)-rnd(0,3),0,100),log:[...x.log,{m:"🥵 Pediu pra poupar e recarregou as pernas.",cat:"treino"}]})},
+      {label:"Jogar inteiro — clube valoriza, mas arrisca", fn:x=>{const sev=dificV(x).sev||1;if(Math.random()<0.22*sev){const sem=rnd(2,3);return {...x,lesaoSemanas:sem,log:[...x.log,{m:`🤕 Jogou no sacrifício e se lesionou — fora por ${sem} semanas.`,cat:"lesao"}]};}return {...x,relacaoClube:clamp((x.relacaoClube||60)+rnd(2,5),0,100),desgaste:clamp((x.desgaste||0)+rnd(6,10),0,100),log:[...x.log,{m:"💪 Jogou no sacrifício — a diretoria reconheceu a entrega.",cat:"vida"}]};}},
+    ]}) },
+];
+
+
 // === data/onboarding.js ===
 // data/onboarding.js — Onboarding sequencial do Modo Carreira (Narrativa v9.65-ns2)
 // Concatenado no bmsrc pelo pack.mjs.
@@ -1495,6 +1724,110 @@ function gerarOfertaPatrocinador(v,key){
   return {marca:p.nome,marcaId:key,valorAno,anos:p.anos,ic:p.ic,desc:p.desc,alvo:p.alvo,perfil:p.perfil};
 }
 
+
+
+// === data/peneira-lances.js ===
+// data/peneira-lances.js — Peneira v3: situações de jogo (não mais etapas abstratas)
+// Concatenado no bmsrc pelo pack.mjs. CONST PURO — sem export.
+//
+// 5 lances. Cada lance = uma cena real + 3 decisões. Cada opção puxa um ATRIBUTO
+// (rit/fin/pas/def/fis) e tem um PERFIL (seguro/equilibrado/ousado).
+//   - ousado: rende mais, mas no resultado ruim pode VACILAR (queima confiança/olheiro)
+//     ou, com chance `risco`, LESIONAR e encerrar a peneira.
+// narr por opção em 3 tiers (bom/medio/ruim); reacao do olheiro por tier no lance.
+
+const LANCES_PEN=[
+  {
+    tit:"A arrancada", ic:"🏃", cena:"Bola lançada nas costas da defesa. É corrida pura, o zagueiro colado no seu ombro. Dá pra brigar por ela?",
+    ops:[
+      {key:"explode", label:"💨 Explodir e ir pra cima", attr:"rit", perfil:"ousado", risco:0.12, tag:"velocidade",
+        bom:"Disparou, deixou o zagueiro plantado e carimbou a área. Até a molecada do CT levantou.",
+        medio:"Foi parelho — o zagueiro segurou no ombro, mas você mostrou que tem pique.",
+        ruim:"Forçou a passada e a coxa travou. Parou mancando no gramado."},
+      {key:"forca", label:"💪 Brigar no corpo", attr:"fis", perfil:"equilibrado", tag:"físico",
+        bom:"Encaixou o ombro, ganhou no corpo e protegeu a bola como gente grande.",
+        medio:"Aguentou o contato e dividiu de igual pra igual.",
+        ruim:"Levou a pior na dividida e ficou no chão reclamando."},
+      {key:"espera", label:"🧊 Não comprar a corrida furada", attr:"pas", perfil:"seguro", tag:"leitura",
+        bom:"Leu que era furada, recuou e já pediu na frente — jogada limpa, inteligente.",
+        medio:"Recuou e manteve a posse, sem brilho mas sem erro.",
+        ruim:"Hesitou demais e a jogada morreu nos seus pés."},
+    ],
+    reacao:{bom:"O preparador físico anotou o pique no caderninho.", medio:"Passou no meião pros olheiros.", ruim:"O olheiro coçou a cabeça."}
+  },
+  {
+    tit:"O contra-ataque", ic:"⚡", cena:"A bola sobrou na entrada da área. O zagueiro vem fechando, o goleiro adiantou meio metro. Você tem um toque pra decidir.",
+    ops:[
+      {key:"shoot", label:"🎯 Bater de primeira no canto", attr:"fin", perfil:"ousado", risco:0.09, tag:"finalização",
+        bom:"Pegou de primeira, sem deixar pingar — no ângulo. GOLAÇO. O banco inteiro de pé.",
+        medio:"Bateu firme, o goleiro espalmou pra escanteio. Quase.",
+        ruim:"Pegou mal, mandou pra fora da arquibancada. Vacilo feio."},
+      {key:"drible", label:"🌀 Cortar pro meio e bater", attr:"rit", perfil:"equilibrado", tag:"drible",
+        bom:"Cortou pro meio, deixou o zagueiro sentado e bateu no contrapé. Que jogada.",
+        medio:"Cortou, ganhou o ângulo, mas demorou e a defesa bloqueou.",
+        ruim:"Tentou o corte, escorregou e perdeu a bola."},
+      {key:"toque", label:"↪️ Tocar pro companheiro livre", attr:"pas", perfil:"seguro", tag:"visão",
+        bom:"Ergueu a cabeça, achou o companheiro livre e serviu na medida pro gol. Assistência de craque.",
+        medio:"Tocou no certo, mas o lance esfriou.",
+        ruim:"Atrasou o passe e o zagueiro interceptou."},
+    ],
+    reacao:{bom:"O olheiro do Royal anotou: \"Esse aí tem categoria.\"", medio:"O olheiro acompanhou de braços cruzados.", ruim:"O olheiro torceu o nariz pra prancheta."}
+  },
+  {
+    tit:"O último homem", ic:"🛡️", cena:"O outro time puxou o contra-ataque. Você é o último entre o atacante e o gol. Não pode vacilar.",
+    ops:[
+      {key:"carrinho", label:"🦵 Dar o carrinho", attr:"def", perfil:"ousado", risco:0.15, tag:"marcação",
+        bom:"Carrinho cirúrgico, tirou a bola limpa na hora exata. Arquibancada vibrou.",
+        medio:"Chegou no carrinho, tirou pra linha de fundo. Resolveu no susto.",
+        ruim:"Chegou atrasado, pegou a canela do atacante — e ainda torceu o pé na entrada."},
+      {key:"conter", label:"⏳ Conter de pé e esperar ajuda", attr:"def", perfil:"equilibrado", tag:"marcação",
+        bom:"Conteve de pé, tocou o atacante pra fora e a zaga chegou. Leitura perfeita.",
+        medio:"Segurou o quanto deu até a ajuda chegar.",
+        ruim:"Foi driblado no corpo mole e o atacante levou perigo."},
+      {key:"falta", label:"✋ Falta tática, corta o lance", attr:"def", perfil:"seguro", tag:"malandragem",
+        bom:"Falta esperta no meio-campo, matou o contra-ataque sem cartão. Malandro.",
+        medio:"Fez a falta, levou amarelo, mas cortou o perigo.",
+        ruim:"Falta boba longe do gol, atrasou o jogo e irritou o avaliador."},
+    ],
+    reacao:{bom:"O olheiro adora um zagueiro que pensa: anotou.", medio:"Avaliador balançou a cabeça, ok.", ruim:"O técnico da base resmungou algo."}
+  },
+  {
+    tit:"A saída de bola", ic:"🧠", cena:"Você recebe de costas no meio, marcado de perto. O time todo pede a saída limpa. Pensa rápido.",
+    ops:[
+      {key:"vertical", label:"🚀 Lançar de primeira na frente", attr:"pas", perfil:"ousado", risco:0.06, tag:"passe",
+        bom:"Girou o pescoço, viu o lançamento e rasgou a defesa de primeira. Bola de ouro.",
+        medio:"Tentou o vertical, o zagueiro adversário cortou de cabeça.",
+        ruim:"Passe errado na saída, entregou o contra-ataque de bandeja."},
+      {key:"girar", label:"🌀 Girar e sair driblando", attr:"rit", perfil:"equilibrado", tag:"drible",
+        bom:"Girou sobre a marcação, saiu na velocidade e puxou o contra-ataque. Ousadia premiada.",
+        medio:"Girou, saiu apertado, mas manteve a posse.",
+        ruim:"Marcado, perdeu a bola na saída e levou vaia."},
+      {key:"apoio", label:"↩️ Tocar de volta no apoio", attr:"pas", perfil:"seguro", tag:"jogo simples",
+        bom:"Devolveu de primeira pro apoio e já girou pra receber de novo. Jogo simples e certo.",
+        medio:"Atrasou a bola, recomeçou a jogada sem risco.",
+        ruim:"Atrasou mal, quase entregou pro atacante adversário."},
+    ],
+    reacao:{bom:"\"Tem miolo, esse moleque\", anotou o olheiro.", medio:"Avaliador seguiu observando.", ruim:"O olheiro sublinhou algo — e não foi elogio."}
+  },
+  {
+    tit:"O lance decisivo", ic:"🔥", cena:"Últimos minutos do coletivo, tudo empatado, todos os olheiros de olho. A bola sobra pra você na meia-lua. É agora.",
+    ops:[
+      {key:"chutaca", label:"💥 Encher o pé de fora da área", attr:"fin", perfil:"ousado", risco:0.08, tag:"finalização",
+        bom:"Encheu o pé, a bola foi subindo e morrendo no ângulo. Um GOLAÇO de placa pra fechar com chave de ouro.",
+        medio:"Pegadão, o goleiro voou e espalmou. Aplausos mesmo sem gol.",
+        ruim:"Chutou com tudo e mandou lá na rua. Risada na arquibancada."},
+      {key:"tabela", label:"🤝 Trocar uma tabela e invadir", attr:"pas", perfil:"equilibrado", tag:"jogada de equipe",
+        bom:"Tabelou, devolveram na medida e você invadiu pra empurrar pro gol. Jogada ensaiada de craque.",
+        medio:"Tabelou, mas a devolução saiu forte e se perdeu.",
+        ruim:"Pediu a tabela e não receberam — leu errado o lance."},
+      {key:"segura", label:"🧊 Segurar e cadenciar", attr:"rit", perfil:"seguro", tag:"sangue frio",
+        bom:"Segurou, esperou o apoio e tocou no momento exato. Maturidade rara pra idade.",
+        medio:"Cadenciou, manteve a bola, sem grande perigo.",
+        ruim:"Segurou demais, foi desarmado e perdeu a última chance."},
+    ],
+    reacao:{bom:"Os olheiros se entreolharam. Esse nome vai pro relatório.", medio:"Fecharam a prancheta pensativos.", ruim:"Os olheiros já estavam guardando as coisas."}
+  },
+];
 
 
 // === data/tour.js ===
@@ -2277,13 +2610,18 @@ const BandeiraBR=({size=16,withLabel=false})=>{
     {withLabel&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:.5,color:"#cbd0d8",fontWeight:600}}>BRA</span>}
   </span>);
 };
-const Avatar=({nome,tom,size=56})=>{
-  // SVG procedural: cabeca + ombros, cor de pele baseada em tom (1-5) ou hash do nome
+const Avatar=({nome,tom,size=56,equipados})=>{
+  // FASE C C2: SVG procedural + selos de itens equipados
   const tons=["#f4d3b4","#e0b896","#c89678","#9e6e4f","#6e4a32"];
   const skin=tons[(tom||((nome?.charCodeAt(0)||0)%5))-1+1]||"#c89678";
   const hairH=((nome?.charCodeAt(1)||0)%5);
   const hairs=["#2a1a0e","#3a2310","#5a3a1a","#1a1a1a","#7a4a2a"];
   const hair=hairs[hairH];
+  // Selos de itens equipados (canto/borda do avatar)
+  const eq=equipados||{};
+  const it=(id)=>(typeof ITENS_RAIZ!=="undefined"&&ITENS_RAIZ[id])?ITENS_RAIZ[id]:null;
+  const itChu=it(eq.chuteira),itCort=it(eq.corte),itCan=it(eq.caneleira),itMei=it(eq.meiao);
+  const selo=(x,y,emoji,cor)=>(<g><circle cx={x} cy={y} r="6.5" fill="#0F3B2E" stroke={cor||"#C9A24B"} strokeWidth="1.3"/><text x={x} y={y+3} textAnchor="middle" fontSize="8">{emoji}</text></g>);
   return (
     <svg width={size} height={size} viewBox="0 0 56 56" style={{display:"block",borderRadius:size*0.18,background:"linear-gradient(180deg,#1a1d22,#10130f)"}}>
       <ellipse cx="28" cy="20" rx="10" ry="11" fill={skin}/>
@@ -2292,6 +2630,10 @@ const Avatar=({nome,tom,size=56})=>{
       <path d="M10 56 Q10 38 28 38 L28 56 Z" fill="#0F3B2E"/>
       <circle cx="25" cy="21" r=".9" fill="#0a0a0a"/>
       <circle cx="31" cy="21" r=".9" fill="#0a0a0a"/>
+      {itCort&&selo(45,8,itCort.ic,"#C9A24B")}
+      {itChu&&selo(8,49,itChu.ic,"#C9A24B")}
+      {itCan&&selo(48,49,itCan.ic,"#7bd88f")}
+      {itMei&&selo(5,32,itMei.ic,"#7bd88f")}
     </svg>
   );
 };
@@ -3432,7 +3774,7 @@ function sugestaoTreino(v){
   const e=v.energia||100;const inten=e<40?"leve":(e>=68&&v.idade<=23)?"pesado":"normal";
   return {foco,intensidade:inten,motivo};
 }
-const VIDA_EUROPA=[["Real Madrid",95,"#FEBE10","#0a0a0a"],["Manchester City",94,"#6CABDD","#0a2a3a"],["Barcelona",93,"#A50044","#fff"],["PSG",92,"#0b1733","#fff"],["Bayern",92,"#DC052D","#fff"],["Liverpool",90,"#C8102E","#fff"],["Arsenal",89,"#EF0107","#fff"],["Inter de Milão",88,"#0068A8","#fff"],["Juventus",87,"#1a1a1a","#fff"],["Benfica",85,"#E00020","#fff"]];
+const VIDA_EUROPA=EUROPA_FICT.map(c=>[c.nome,c.forca,c.cor1,c.cor2]); // FASE D M1: deriva da liga ficticia (europa.js), zero nomes reais
 const WC=ano=>ano>=2026&&(ano-2026)%4===0;
 const COPA_AMERICA=ano=>ano>=2027&&(ano-2027)%4===0;
 const MARCAS=["Nyko Esportes","BravoBank","Volt Energia","Selva Cosméticos","MaxForce Suplementos","Trovão Telecom","Onça Apostas","Café Aurora","RioMar Seguros","Pulse Eletrônicos","Verde Vale Alimentos","Titan Pneus"];
@@ -3895,7 +4237,7 @@ function aplicarLesaoDetalhada(vida,contexto){
 
 function novaVida(nome,estado,altura,pe,posPref,dificuldade){
   const talento=rnd(0,100);
-  const potencial=clamp(58+Math.round(talento*0.36)+rnd(-3,4),62,95);
+  const potencial=clamp(52+Math.round(talento*0.34)+rnd(-4,4),52,92); // peneira v2: piso/teto menores -> 5 estrelas raro
   const talentoDev=clamp(0.85+(talento/100)*0.42+rnd(-6,6)/100,0.8,1.32);
   const rt=Math.random();const tipoDes=rt<0.25?"precoce":rt<0.8?"normal":"tardio";
   altura=altura||rnd(170,190);
@@ -3952,7 +4294,7 @@ function novaVidaVet(nome,estado,altura,pe,posPref,dificuldade){
   let ovrAno=Math.max(64,ovr-12);
   anos.forEach((ano,i)=>{
     ovrAno=clamp(ovrAno+rnd(1,3),60,Math.max(ovr,85));
-    carreiraSim.push({temp:ano,clube:i<3?"Goiás":i<5?"Palmeiras":"Real Madrid",categoria:"Profissional",jogos:rnd(28,42),gols:rnd(pos==="ATA"?12:pos==="MEI"?6:1,pos==="ATA"?28:pos==="MEI"?16:6),assist:rnd(3,12),nota:+(6.8+Math.random()*0.6).toFixed(2),ovr:ovrAno});
+    carreiraSim.push({temp:ano,clube:i<3?"Goiás":i<5?"Palmeiras":"Real Castilla",categoria:"Profissional",jogos:rnd(28,42),gols:rnd(pos==="ATA"?12:pos==="MEI"?6:1,pos==="ATA"?28:pos==="MEI"?16:6),assist:rnd(3,12),nota:+(6.8+Math.random()*0.6).toFixed(2),ovr:ovrAno});
   });
   return {...v,
     idade:35,temporada:2025,
@@ -4103,6 +4445,8 @@ function chanceLesaoV(v){
   c*=(v.fragil||1);if((v.staff||[]).includes("prepfis"))c*=0.78;
   if(v.foco==="descanso")c*=0.2;else if(v.foco==="estudos")c*=0.5;
   if(v.riscoLesaoTemp&&v.riscoLesaoTemp.pct)c+=v.riscoLesaoTemp.pct/100; // FASE B E1: risco_lesao temporario dos eventos raiz
+  // FASE C C1: itens equipados ajustam risco
+  if(v.equipados&&typeof ITENS_RAIZ!=="undefined"){Object.values(v.equipados).forEach(id=>{const it=ITENS_RAIZ[id];if(it&&it.ef&&it.ef.risco_lesao!=null)c+=it.ef.risco_lesao/100;});}
   c*=(dificV(v).sev||1); // FASE A B3: dificuldade escala risco de lesao
   return clamp(c,0.003,0.2);
 }
@@ -4132,13 +4476,15 @@ function simularPartidaV(vida,rod,bonus,solo){
   if(ehSec){const viz=(POS_VIZINHO[vida.pos]||[]).includes(posJogo);base*=viz?0.95:0.90;}
   // B5: bonus de versatilidade reduzido de 7% pra 3% por pos extra (max +9%)
   const versBonus=Math.min((vida.posicoes?vida.posicoes.length:1)-1,3)*0.03;
+  // FASE C C1: bonus passivo de notas dos equipados
+  let _itemBonusNota=0;if(vida.equipados&&typeof ITENS_RAIZ!=="undefined")Object.values(vida.equipados).forEach(id=>{const it=ITENS_RAIZ[id];if(it&&it.ef&&it.ef.nota!=null)_itemBonusNota+=it.ef.nota;});
   const men=vida.men!=null?vida.men:55;const menNota=clamp((men-55)*0.006,-0.18,0.28);
   // FASE A Q1: pressao do hype cobra na nota (-0.0 a -0.30 conforme pressaoHype)
   const _hypeNota=-clamp((vida.pressaoHype||0)*0.003,0,0.30);
   const energiaF=0.7+vida.energia*0.003,moralF=0.8+vida.moral*0.0026;
   const advBase=rod?rod.forca:vida.clubeForca;const mando=rod?(rod.casa?-4:4):0;
   const adv=clamp(advBase+mando+rnd(-6,6),40,96);const _sp=0.9;const _dec=(ocV(vida,"decisivo")-50)*(adv>=base+4?0.006:0.0012);
-  let nota=clamp(6+(base*energiaF*moralF-adv)*0.07+bonusTraco(vida,posJogo)+(vida.formacaoTecnico||0)*0.004+((vida.sinergia||50)-50)*0.012+(vida.faixa==="absoluto"?0.4:vida.faixa==="capitao"?0.25:vida.faixa==="vice"?0.12:0)+(((vida.clima||60)-60)*0.005)+versBonus+menNota+_hypeNota+(Math.random()*_sp-_sp/2)+_dec,2,10);
+  let nota=clamp(6+(base*energiaF*moralF-adv)*0.07+bonusTraco(vida,posJogo)+(vida.formacaoTecnico||0)*0.004+((vida.sinergia||50)-50)*0.012+(vida.faixa==="absoluto"?0.4:vida.faixa==="capitao"?0.25:vida.faixa==="vice"?0.12:0)+(((vida.clima||60)-60)*0.005)+versBonus+menNota+_hypeNota+_itemBonusNota+(Math.random()*_sp-_sp/2)+_dec,2,10);
   let gols=0,assist=0;
   if(!solo){
     const finSk=skillV(vida,["finalizacao","compostura","semBola"]),plaSk=skillV(vida,["passe","visao","decisoes"]);
@@ -4274,7 +4620,7 @@ function entrarBaseV(vida,nome,forca,pacote){
   const base={...vida,fase:"base",clube:nome,clubeForca:forca,tier:serieA?"serieA":"base",categoria:cat,salarioMes:bolsa,dinheiro:(vida.dinheiro||0)+(luvas||0),sinergia:pacote?pacote.sinBase:32,anosNoClube:0,capitao:false,faixa:"nenhum",clima:55,elenco:gerarVestiario(forca),torcida:48,reputacao:clamp(vida.reputacao+(pacote?pacote.repBonus:5),0,100),talentoDev:clamp((vida.talentoDev||1)*(1+(pacote?pacote.dev:0)),0.8,1.4),moradia:aloj?"quarto":(vida.moradia||"familia"),log:[...vida.log,{m:msg}]};
   base.rival=rivalDe(base);base.calendario=gerarCalendarioV(base);base.artilharia=gerarArtilhariaV(base);base.liga=gerarLigaV(base);base.elenco=gerarElencoBase(base.categoria,base.ovr);base.moradia=aloj?"alojamento":(vida.moradia||"familia");base.alojCT=!!aloj;base.escolaCT=!!escola;return base;
 }
-const VERSAO="v9.107 FASE A B1 estendido - TONS_POST sem dominancia. Cada tom de post/entrevista agora tem GANHO E CUSTO: (1) Confiante torcida+2 moralElenco+1 patroBoost+0.05 MAS imagem-1 (pode parecer arrogante). (2) Humilde torcida+3 moralElenco+3 patroBoost+0.02 MAS fama-1 (humildade nao constroi mito). (3) Provocativo torcida+1 patroBoost+0.10 MAS moralElenco-2 imagem-3 relacaoTecnico-1 (alto risco / alta recompensa). (4) Tecnico/serio torcida+1 moralElenco+2 patroBoost+0.03 com flag de menor engajamento. Aplicadores em postarRede e jornalista entrevista pos-jogo plugados com os campos novos (imagem fama relacaoTecnico vindo do t.efeitos). MOM_OFE/MOM_DEF e EVENTOS_MIDIA auditados - ja tem tradeoff inerente.";
+const VERSAO="v9.117 Modo Manager ABERTO no Menu (BETA): botao que entra direto no ManagerGame (tecnico de clube — escala XI, mercado, financas, partidas) pros amigos testarem. Antes so era alcancavel via pos-carreira.";
 
 /* ===== IMPRENSA FICTÍCIA ===== */
 // Sistema de manchetes movido para data/manchetes.js (Sprint 4.5)
@@ -4291,7 +4637,7 @@ function papelPorNivel(ovr,forca){if(ovr>=forca+1)return {oferecido:2,max:2};if(
 function papelOferta(ovr,forca,sin=50,rep=50,cap=false){const score=(ovr-forca)+(sin-50)*0.09+(rep-50)*0.04+(cap?2:0);if(score>=1.5)return {oferecido:2,max:2};if(score>=-4)return {oferecido:1,max:2};return {oferecido:0,max:1};}
 function sinergiaNivel(s){return s>=85?{t:"Ídolo da torcida",c:"#22c55e"}:s>=68?{t:"Peça-chave",c:"#84cc16"}:s>=50?{t:"Integrado",c:"#eab308"}:s>=30?{t:"Em adaptação",c:"#f59e0b"}:{t:"Recém-chegado",c:"#ef6b6b"};}
 function torcidaNivel(t){return t>=90?{t:"Ídolo eterno",c:"#22c55e",emoji:"👑"}:t>=78?{t:"Ídolo",c:"#84cc16",emoji:"❤️"}:t>=60?{t:"Querido",c:"#a3e635",emoji:"💚"}:t>=45?{t:"Aceito",c:"#eab308",emoji:"🙂"}:t>=25?{t:"Sob desconfiança",c:"#f59e0b",emoji:"😬"}:{t:"Rejeitado",c:"#ef4444",emoji:"💔"};}
-function rivalDe(v){const europa=v.continente==="Europa";const pool=(europa?VIDA_EUROPA.map(e=>e[0]):poolSerie(serieAtual(v)).map(c=>c[0])).filter(n=>n&&n!==v.clube);if(!pool.length)return null;return pool[_hsh((v.clube||"x")+"rival")%pool.length];}
+function rivalDe(v){if(v.continente==="Europa"){const _r=pickRivalEuropa(v.clube);if(_r)return _r;}const europa=v.continente==="Europa";const pool=(europa?VIDA_EUROPA.map(e=>e[0]):poolSerie(serieAtual(v)).map(c=>c[0])).filter(n=>n&&n!==v.clube);if(!pool.length)return null;return pool[_hsh((v.clube||"x")+"rival")%pool.length];}
 function forcaClubeV(nome,europa){const e=VIDA_EUROPA.find(x=>x[0]===nome);if(e)return e[1];const t=TEAMS.find(x=>x.name===nome);if(t)return t.s;const p=VIDA_PEQ.find(x=>x[0]===nome);if(p)return p[1];if(SERIE_FORCA[nome]!=null)return SERIE_FORCA[nome];return europa?80:60;}
 function carrascoNivel(venc,tot){if(!tot)return null;const r=venc/tot;if(tot>=4&&r>=0.7)return {t:"Pesadelo do rival",c:"#f43f5e",emoji:"😈"};if(tot>=2&&r>=0.6)return {t:"Carrasco do rival",c:"#fb7185",emoji:"⚔️"};if(tot>=4&&r<=0.2)return {t:"Freguês do rival",c:"#94a3b8",emoji:"😵"};return {t:`${venc}/${tot} em clássicos`,c:"#cbd5e1",emoji:"⚔️"};}
 function felicNivel(f){return f>=80?{t:"Realizado",c:"#22c55e"}:f>=62?{t:"Feliz",c:"#84cc16"}:f>=45?{t:"Equilibrado",c:"#eab308"}:f>=28?{t:"Sobrecarregado",c:"#f59e0b"}:{t:"Infeliz",c:"#ef4444"};}
@@ -4663,6 +5009,51 @@ function relatorioOlheiroV(v,impressao){
   const verdict=impressao>=82?`Cravaram: é fenômeno. Para os olheiros, ${paLabel}.`:impressao>=66?`Chamou muita atenção em campo. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=50?`Deixou boa impressão. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=38?`Mostrou lampejos, ainda irregular. ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`:impressao>=25?`Saiu cru desta vez — no papel, ${paLabel}.`:`Os olheiros nao foram gentis: "Foca, mancebo, ou pega o caderno." ${paLabel[0].toUpperCase()+paLabel.slice(1)}.`;
   return {ca,pa,paMin,paMax,paPrecise,paLabel,destaques,verdict};
 }
+function resolverEntrevistaPendente(v){
+  const p=v.entrevistaPendente; if(!p) return v;
+  const tom=p.tom||"humilde";
+  const sev=(typeof dificV==="function"?(dificV(v).sev||1):1);
+  const forma=(v.formaRecente&&v.formaRecente.length)?v.formaRecente.reduce((s,n)=>s+n,0)/v.formaRecente.length:6.4;
+  const bem=forma>=6.8, mal=forma<=5.8;
+  let d={torcida:0,imagem:0,relacaoClube:0,relacaoTecnico:0,moral:0,reputacao:0,seguidores:0};
+  let txt="";
+  if(tom==="provocativo"){
+    if(bem){d.torcida=rnd(6,12);d.reputacao=rnd(1,3);d.relacaoClube=-rnd(2,5);txt="A provocacao caiu bem com a torcida embalada.";}
+    else{d.imagem=-rnd(4,10);d.relacaoClube=-rnd(5,11);d.relacaoTecnico=-rnd(2,6);d.moral=-rnd(2,5);txt="A provocacao pegou mal com o time em baixa - a diretoria nao gostou.";}
+  } else if(tom==="confiante"){
+    if(mal){d.imagem=-rnd(3,8);d.relacaoClube=-rnd(2,5);d.moral=-rnd(1,4);txt="Soou arrogante com o time mal das pernas - a imprensa caiu matando.";}
+    else{d.torcida=rnd(3,7);d.imagem=rnd(2,5);d.reputacao=rnd(1,3);txt="A confianca convenceu - a torcida comprou a fala.";}
+  } else if(tom==="tecnico"){
+    d.reputacao=rnd(2,4);d.relacaoTecnico=rnd(1,4);d.imagem=rnd(0,3);txt="Analise madura - caiu bem com a comissao.";
+  } else {
+    d.moral=rnd(1,4);d.imagem=rnd(1,4);d.relacaoTecnico=rnd(0,3);txt="A humildade foi elogiada - sem polemica.";
+  }
+  if(Math.random()<0.22){
+    const tw=pick([
+      {m:"Um perfil gigante repostou seu trecho - seguidores dispararam.",seguidores:rnd(8000,40000),imagem:rnd(1,4)},
+      {m:"Tiraram uma frase de contexto e viralizou do jeito errado.",imagem:-rnd(4,10),torcida:-rnd(2,6)},
+      {m:"Um idolo aposentado saiu em sua defesa na TV.",reputacao:rnd(2,5),torcida:rnd(2,6)},
+      {m:"A torcida rival pegou no seu pe a semana toda.",torcida:-rnd(1,4),moral:-rnd(1,3)},
+    ]);
+    Object.keys(tw).forEach(k=>{if(k!=="m")d[k]=(d[k]||0)+tw[k];});
+    txt+=" "+tw.m;
+  }
+  const neg=x=>x<0?Math.round(x*sev):Math.round(x);
+  const ap={torcida:neg(d.torcida),imagem:neg(d.imagem),relacaoClube:neg(d.relacaoClube),relacaoTecnico:neg(d.relacaoTecnico),moral:neg(d.moral),reputacao:neg(d.reputacao)};
+  const lab={torcida:"Torcida",imagem:"Imagem",relacaoClube:"Diretoria",relacaoTecnico:"Técnico",moral:"Moral",reputacao:"Reputação"};
+  const efTxt=Object.keys(lab).filter(k=>ap[k]).map(k=>`${lab[k]} ${ap[k]>0?"+":""}${ap[k]}`).join(", ");
+  return {...v,
+    torcida:clamp((v.torcida||50)+ap.torcida,0,100),
+    imagem:clamp((v.imagem||50)+ap.imagem,0,100),
+    relacaoClube:clamp((v.relacaoClube||60)+ap.relacaoClube,0,100),
+    relacaoTecnico:clamp((v.relacaoTecnico||60)+ap.relacaoTecnico,0,100),
+    moral:clamp((v.moral||60)+ap.moral,0,100),
+    reputacao:clamp((v.reputacao||0)+ap.reputacao,0,100),
+    seguidores:Math.max(0,(v.seguidores||30000)+(d.seguidores||0)),
+    entrevistaPendente:null,
+    log:[...v.log,{m:`🎤 Repercussão da entrevista: ${txt}${efTxt?" ["+efTxt+"]":""}`,cat:"midia"}]
+  };
+}
 function pacoteClubeV(forca,nome){
   const h=Math.abs(_hsh((nome||"x")+"pac"+forca));
   const r=h%100;
@@ -4716,7 +5107,7 @@ function simularBlocoEmLiga(v,n,liga){
     if(Math.random()<pJoga){const rod={forca:clamp(advC.forca+rnd(-4,4),40,95),casa,adv:advC.nome};const p=simularPartidaV(vv,rod);jogos++;gols+=p.gols;assist+=p.assist;notaSoma+=p.nota;resJog={nota:p.nota,adv:p.adv};
         // J6: jornalista pode perguntar (em performance extrema)
         const pergJ=rolarPerguntaJornalista(v,resJog);
-        if(pergJ){cards.push({tipo:"jornalista",pergunta:pergJ.pergunta,adv:pergJ.adv,contexto:pergJ.tipo});}pg=p.gols;pn=p.nota;vv={...vv,formaRecente:[...(vv.formaRecente||[]),p.nota].slice(-5)};}
+        if(pergJ&&!v.entrevistaPendente&&(semanaAbs(v)-(v.ultimaEntrevista||-99))>=4){cards.push({tipo:"jornalista",pergunta:pergJ.pergunta,adv:pergJ.adv,contexto:pergJ.tipo});}pg=p.gols;pn=p.nota;vv={...vv,formaRecente:[...(vv.formaRecente||[]),p.nota].slice(-5)};}
     const sc=placarClubeV(vv.clubeForca,advC.forca,casa,pn);const us=sc.gfTeam+pg,them=sc.ga;
     if(liga)rodadaLigaV(liga,idx,resJog,{us,them});
     feed.push({adv:advC.nome,us,them,casa,jogou:!!resJog});
@@ -5172,6 +5563,8 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     if(!v.assinaturasDisponiveisVistas)v.assinaturasDisponiveisVistas=[];
   if(!v.aprendProgByPos)v.aprendProgByPos={};
   if(v.pressaoHype==null)v.pressaoHype=0;
+  if(!v.equipados)v.equipados={};
+  if(!v.inventario)v.inventario=[];
   if(v.ultimoEventoRaiz==null)v.ultimoEventoRaiz=null;
   if(v.eventoRaizPendente==null)v.eventoRaizPendente=null;
   if(v.riscoLesaoTemp==null)v.riscoLesaoTemp=null;
@@ -5201,7 +5594,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     // Gatilho: peneira_reprovado (se nao passou)
     if(!(res.clubes&&res.clubes.length>0)){const tRep=dispararTutorial(v,"peneira_reprovado");if(tRep)setCards(c=>[...c,tRep]);}
     if(tIni)setCards(c=>[...c,tIni]);};
-  const assinarPeneira=(clube,pos,pacote)=>{const p=pos||vida.pos||vida.vocacao||posicaoIdeal(vida.at,vida.altura).pos;const v0={...vida,pos:p,posicoes:[p],ovr:ovrDe(vida.at,p),potRevelado:Math.max(vida.potRevelado||0,rnd(24,34)),ovrReportAnt:Math.max(40,ovrDe(vida.at,p)-rnd(2,4))};const v=entrarBaseV(v0,clube.nome,clube.forca,pacote);set(v);const tutCard=dispararTutorial(v,"peneira_passou");const tSav=dispararTutorial(v,"primeiro_save");const tuts=[tutCard,tSav].filter(Boolean);setCards([{tipo:"aprovado"},...tuts]);setTela("vida");playSfx("signed");};
+  const assinarPeneira=(clube,pos,pacote)=>{const p=pos||vida.pos||vida.vocacao||posicaoIdeal(vida.at,vida.altura).pos;const v0={...vida,pos:p,posicoes:[p],ovr:ovrDe(vida.at,p),potRevelado:Math.max(vida.potRevelado||0,rnd(24,34)),ovrReportAnt:Math.max(40,ovrDe(vida.at,p)-rnd(2,4))};const v=entrarBaseV(v0,clube.nome,clube.forca,pacote);v.log=[...(v.log||[]),{m:`🎽 Passou na peneira e assinou com o ${clube.nome}. Aqui começa a história.`,cat:"raiz"}];set(v);const tutCard=dispararTutorial(v,"peneira_passou");const tSav=dispararTutorial(v,"primeiro_save");const tuts=[tutCard,tSav].filter(Boolean);setCards([{tipo:"aprovado"},...tuts]);setTela("vida");playSfx("signed");};
   const tentarAnoQueVem=()=>{
     const sub={...(vida.sub||{})};const tetoMax=Math.min(20,Math.round((vida.potencial||80)/5)+2);
     Object.keys(sub).forEach(k=>{sub[k]=clamp(+(sub[k]+rnd(1,3)/5).toFixed(2),1,tetoMax);});
@@ -5315,6 +5708,8 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     let vidaPre=vida;
     if(vida.autoTreino&&vida.fase!=="peneira"){const s=sugestaoTreino(vida);if(s)vidaPre={...vida,foco:s.foco,intensidade:s.intensidade};}
     const af=aplicarFocoV(vidaPre);let v=af.vida;
+    if(v.entrevistaPendente&&typeof resolverEntrevistaPendente==="function"&&semanaAbs(v)-(v.entrevistaPendente.semana||0)>=1){v=resolverEntrevistaPendente(v);}
+    if(v.fase!=="peneira"&&!v.suspenso&&typeof MOMENTOS_SEMANA!=="undefined"&&Math.random()<0.32){const _mc=MOMENTOS_SEMANA.filter(m=>(!m.cond||m.cond(v))&&m.id!==v.ultimoMomento);if(_mc.length){const _m=pick(_mc);v.ultimoMomento=_m.id;nc.push(_m.card(v));}}
     // J2: decrementar semanas do plano
     if(v.planoTreino&&v.planoTreino.semanasRestantes>0){
       const novas=v.planoTreino.semanasRestantes-1;
@@ -5522,7 +5917,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
       }
       nc.push(cardBase);
       {const jM2=v.jogos-jogos0;if(jM2>0&&!v.empOrigem){const nMm=(v.notaSoma-notaSoma0)/jM2;if(nMm>=7.3&&(v.olheiros||0)>=22&&Math.random()<0.32){const alvo=clubeOlheiroV(v);if(alvo){v.olheiros=clamp((v.olheiros||0)+rnd(7,13),0,100);nc.push({tipo:"olheiro_relatorio",olheiro:nomeOlheiro((v.temporada||1)+alvo.nome+v.semana),clube:alvo.nome,europa:alvo.europa,nota:+nMm.toFixed(1)});}}}}
-      {const jE=v.jogos-jogos0;const temJornal=nc.some(c=>c.tipo==="jornalista");if(jE>0&&!temJornal&&Math.random()<(classico?0.62:0.4)){const nE=(v.notaSoma-notaSoma0)/jE;const bem=nE>=6.8,mal=nE<5.6;nc.push({tipo:"escolha",titulo:"📺 Entrevista pós-jogo",texto:`Os repórteres cercam você ${bem?"depois de uma boa atuação":mal?"depois de um jogo difícil":"na saída do gramado"}. Que tom você usa?`,opcoes:[{label:"🙏 Humilde — elogiar o grupo",fn:x=>({...x,imagem:clamp((x.imagem||50)+rnd(3,6),0,100),torcida:clamp((x.torcida||50)+2,0,100),moral:clamp(x.moral+3,0,100),reputacao:clamp(x.reputacao+1,0,100),log:[...x.log,{m:"Entrevista: foi humilde e elogiou o grupo."}]})},{label:"💪 Confiante — assumir o protagonismo",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(2,4),0,100),imagem:clamp((x.imagem||50)+(bem?rnd(2,5):-rnd(1,4)),0,100),torcida:clamp((x.torcida||50)+rnd(0,2),0,100),moral:clamp(x.moral+(bem?3:-1),0,100)})},{label:"🔥 Provocador — alfinetar o rival",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(4,7),0,100),imagem:clamp((x.imagem||50)-rnd(4,9),0,100),torcida:clamp((x.torcida||50)+(classico?rnd(3,6):rnd(1,3)),0,100),moral:clamp(x.moral+(bem?2:-5),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)-rnd(2,5),0,100),relacaoClube:clamp((x.relacaoClube||60)-rnd(1,4),0,100),disciplina:clamp((x.disciplina||50)-rnd(3,6),0,100),log:[...x.log,{m:"🔥 Entrevista provocadora — vestiário e diretoria torceram o nariz.",cat:"vida"}]})}]});}}
+      {const jE=v.jogos-jogos0;const temJornal=nc.some(c=>c.tipo==="jornalista");if(false){ /* entrevista pos-jogo duplicada desativada: agora so a coletiva deferida (jornalista) */const nE=(v.notaSoma-notaSoma0)/jE;const bem=nE>=6.8,mal=nE<5.6;nc.push({tipo:"escolha",titulo:"📺 Entrevista pós-jogo",texto:`Os repórteres cercam você ${bem?"depois de uma boa atuação":mal?"depois de um jogo difícil":"na saída do gramado"}. Que tom você usa?`,opcoes:[{label:"🙏 Humilde — elogiar o grupo",fn:x=>({...x,imagem:clamp((x.imagem||50)+rnd(3,6),0,100),torcida:clamp((x.torcida||50)+2,0,100),moral:clamp(x.moral+3,0,100),reputacao:clamp(x.reputacao+1,0,100),log:[...x.log,{m:"Entrevista: foi humilde e elogiou o grupo."}]})},{label:"💪 Confiante — assumir o protagonismo",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(2,4),0,100),imagem:clamp((x.imagem||50)+(bem?rnd(2,5):-rnd(1,4)),0,100),torcida:clamp((x.torcida||50)+rnd(0,2),0,100),moral:clamp(x.moral+(bem?3:-1),0,100)})},{label:"🔥 Provocador — alfinetar o rival",fn:x=>({...x,reputacao:clamp(x.reputacao+rnd(4,7),0,100),imagem:clamp((x.imagem||50)-rnd(4,9),0,100),torcida:clamp((x.torcida||50)+(classico?rnd(3,6):rnd(1,3)),0,100),moral:clamp(x.moral+(bem?2:-5),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)-rnd(2,5),0,100),relacaoClube:clamp((x.relacaoClube||60)-rnd(1,4),0,100),disciplina:clamp((x.disciplina||50)-rnd(3,6),0,100),log:[...x.log,{m:"🔥 Entrevista provocadora — vestiário e diretoria torceram o nariz.",cat:"vida"}]})}]});}}
     } else if(v.fase!=="peneira"){
       const fr=(v.formaRecente||[]);const formaMed=fr.length?fr.reduce((a,b)=>a+b,0)/fr.length:6.4;
       let ds=0;
@@ -5784,6 +6179,43 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     setCards(cards.slice(1));
   };
   const resolverCopa=(card)=>{const r=resolverCopaMundoV(vida,card.ano,card.torneio||"Copa do Mundo");set(r.vida);setCards(c=>{const resto=c.slice(1);return [{tipo:"copa_resultado",...r.resultado},...resto];});};
+  // FASE C C1: itens raiz - comprar (consumivel aplica direto, durable vai pro inventario)
+  const comprarItemRaiz=(id)=>{
+    if(typeof ITENS_RAIZ==="undefined"||!ITENS_RAIZ[id])return;
+    const it=ITENS_RAIZ[id];
+    if(vida.dinheiro<it.custo)return;
+    let v={...vida,at:{...vida.at},dinheiro:vida.dinheiro-it.custo};
+    if(it.tipo==="consumivel"){
+      const _sev=dificV(v).sev||1;
+      v=aplicarEfeitosRaiz(v,it.ef,_sev);
+      v.log=[...(v.log||[]),{m:`Comprou ${it.ic} ${it.nome} (${fmtDin(it.custo)}).`,cat:"raiz"}];
+    } else {
+      // durable: vai pro inventario e equipa automaticamente no slot (substitui anterior)
+      const equip={...(v.equipados||{})};
+      const inv=[...(v.inventario||[])];
+      if(it.slot){
+        const anterior=equip[it.slot];
+        if(anterior&&anterior!==id)inv.push(anterior);
+        equip[it.slot]=id;
+      } else {
+        inv.push(id);
+      }
+      v.equipados=equip;v.inventario=inv;
+      v.log=[...(v.log||[]),{m:`Comprou ${it.ic} ${it.nome} (${fmtDin(it.custo)}) e equipou.`,cat:"raiz"}];
+    }
+    set(v);
+  };
+  const equiparItemRaiz=(id)=>{
+    if(typeof ITENS_RAIZ==="undefined"||!ITENS_RAIZ[id])return;
+    const it=ITENS_RAIZ[id];if(!it.slot)return;
+    const equip={...(vida.equipados||{})};
+    const inv=[...(vida.inventario||[])];
+    const anterior=equip[it.slot];
+    if(anterior&&anterior!==id&&!inv.includes(anterior))inv.push(anterior);
+    equip[it.slot]=id;
+    const idx=inv.indexOf(id);if(idx>=0)inv.splice(idx,1);
+    set({...vida,equipados:equip,inventario:inv,log:[...vida.log,{m:`Equipou ${it.ic} ${it.nome}.`,cat:"raiz"}]});
+  };
   const comprarBem=(nome,preco)=>{if(vida.dinheiro<preco||vida.bens.includes(nome))return;let mor=vida.moradia;if(nome==="🏡 Mansão")mor="mansao";else if(nome==="🏠 Casa própria"&&vida.moradia!=="mansao")mor="propria";set({...vida,dinheiro:vida.dinheiro-preco,bens:[...vida.bens,nome],moradia:mor,moral:clamp(vida.moral+6,0,100),reputacao:clamp(vida.reputacao+(preco>=1000000?1.5:0.4),0,100),imagem:clamp((vida.imagem||50)+(preco>=1000000?rnd(1,3):0),0,100),log:[...vida.log,{m:`Comprou: ${nome}.`}]});};
   const mudarMoradia=(k)=>{const m=MORADIAS.find(x=>x.key===k);if(!m)return;if(m.bem&&!vida.bens.includes(m.bem))return;set({...vida,moradia:k,log:[...vida.log,{m:`Mudou de moradia: ${m.icon} ${m.nome}.`}]});};
   const acaoVida=(key)=>{const a=ACOES_VIDA[key];if(!a||acaoVidaBloqueio(vida,key))return;let v={...vida};v.dinheiro=v.dinheiro-(a.custo||0);if(a.en)v.energia=clamp(v.energia-a.en,0,100);v.vidaCd={...(v.vidaCd||{}),[key]:semanaAbs(v)};if(a.card){setVidaPessoal(false);set(v);setCards(c=>[a.card(v),...c]);return;}v=a.ef(v);set(v);};
@@ -5843,7 +6275,7 @@ function PlayerGame({goMenu,virarTecnico,modoInicial}){
     {cards.length>0&&(cards[0].tipo==="contrato"||cards[0].tipo==="agente_livre")
       ? <ContratoModal card={cards[0]} vida={vida} onAssinar={assinarContrato} onRecusar={()=>recusarRenova(cards[0])}/>
       : cards.length>0&&<CardModalVida card={cards[0]} vida={vida} onInfo={()=>resolverCard()} onEscolha={resolverCard} onTransfer={resolverTransfer} onAposentar={resolverAposentar} onCopa={resolverCopa} onBolsa={resolverBolsa} onPosicao={aceitarPosicao} onPatrocinio={resolverPatrocinio} onEmprestimo={resolverEmprestimo} onDuelo={onDuelo}/>}
-    {vidaPessoal&&<PerfilModal vida={vida} onAposentar={()=>{setVidaPessoal(false);setCards(c=>[{tipo:"escolha",titulo:"🎓 Encerrar a carreira?",texto:"Você vai pendurar as chuteiras agora e partir para a segunda carreira (técnico, dono de clube ou outra). Tem certeza?",opcoes:[{label:"Sim, me aposentar",fn:x=>({...x,fim:true,fase:"aposentado"})},{label:"Ainda não",fn:x=>x}]},...c]);}} onTreinoOpen={()=>{setVidaPessoal(false);setTreinoModal(true);}} onComprar={comprarBem} onAplicar={aplicar} onResgatar={resgatar} onPedirAumento={pedirAumento} onPedirAgente={pedirAgente} onAquecer={aquecerNome} onCacarEuropa={cacarEuropa} onContratarAgente={contratarAgente} onPedirSaida={pedirSaida} onMoradia={mudarMoradia} onStaff={toggleStaff} onNegocio={comprarNegocio} onAcaoVida={acaoVida} close={()=>setVidaPessoal(false)}/>}
+    {vidaPessoal&&<PerfilModal vida={vida} onAposentar={()=>{setVidaPessoal(false);setCards(c=>[{tipo:"escolha",titulo:"🎓 Encerrar a carreira?",texto:"Você vai pendurar as chuteiras agora e partir para a segunda carreira (técnico, dono de clube ou outra). Tem certeza?",opcoes:[{label:"Sim, me aposentar",fn:x=>({...x,fim:true,fase:"aposentado"})},{label:"Ainda não",fn:x=>x}]},...c]);}} onTreinoOpen={()=>{setVidaPessoal(false);setTreinoModal(true);}} onComprar={comprarBem} onItemRaiz={comprarItemRaiz} onEquipar={equiparItemRaiz} onAplicar={aplicar} onResgatar={resgatar} onPedirAumento={pedirAumento} onPedirAgente={pedirAgente} onAquecer={aquecerNome} onCacarEuropa={cacarEuropa} onContratarAgente={contratarAgente} onPedirSaida={pedirSaida} onMoradia={mudarMoradia} onStaff={toggleStaff} onNegocio={comprarNegocio} onAcaoVida={acaoVida} close={()=>setVidaPessoal(false)}/>}
     {showPlanoTec&&<PlanoTreinoModal vida={vida} onDefinir={definirPlanoTreino} onCancelar={cancelarPlanoTreino} onClose={()=>setShowPlanoTec(false)}/>}
       {showPostar&&(()=>{const niv=nivelInfluencer(vida.seguidores||0);return (<div style={modalBg} onClick={()=>setShowPostar(false)}><div style={modalBox} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><span style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:17}}>📱 Postar nas redes</span><button onClick={()=>setShowPostar(false)} style={{background:"none",border:"none",color:"#8b909a",cursor:"pointer"}}><X size={20}/></button></div>
@@ -5917,7 +6349,7 @@ function CriacaoVida({temSave,onCriar,onCriarPro,onCriarVet,onContinuar,onMenu})
   );
 }
 
-const ETAPAS_PEN=[
+const _ETAPAS_PEN_OLD=[  // peneira v3: substituido por LANCES_PEN (data/peneira-lances.js)
   {nome:"Preparo físico",icon:"🏃",bar:49,attrs:()=>["fis","rit"],pergunta:"Teste físico: corrida, força, explosão. Como você encara?",opcoes:[
     {key:"tudo",label:"💥 Dar o sangue",d:"Aposta: pode brilhar ou se queimar",mod:6,vr:17,co:14,cf:20},
     {key:"const",label:"⚖️ Ritmo constante",d:"Sólido, com pouca margem de erro",mod:3,vr:11,co:7,cf:8},
@@ -5955,31 +6387,40 @@ function PeneiraVida({vida,tent,onAssinar,onTentar,onTrocarPos,onMenu}){
   const [fim,setFim]=useState(null);
   const [posSel,setPosSel]=useState(null);const [clubeSel,setClubeSel]=useState(null);
   const [nivel,setNivel]=useState(2);
-  useEffect(()=>{setStarted(false);setEtapa(0);setPhase("choice");setScores([]);setConf(50);setLast(null);setFim(null);setPosSel(null);setClubeSel(null);},[tent]);
+  const [lesionou,setLesionou]=useState(false);
+  useEffect(()=>{setStarted(false);setEtapa(0);setPhase("choice");setScores([]);setConf(50);setLast(null);setFim(null);setPosSel(null);setClubeSel(null);setLesionou(false);},[tent]);
   const med=arr=>arr.reduce((s,k)=>s+vida.at[k],0)/arr.length;
   const exp=Math.min(tent*2,5);
   const ATKEYS=["rit","fin","pas","def","fis"];
-  const grade=(raw)=> raw>=74?{t:"Brilhou",c:"#22c55e",ic:"🌟"}:raw>=60?{t:"Foi bem",c:"#84cc16",ic:"✅"}:raw>=46?{t:"Regular",c:"#eab308",ic:"➖"}:{t:"Apagado",c:"#fb7185",ic:"😕"};
+  const grade=(tier,lesao)=> tier==="bom"?{t:"Brilhou",c:"#22c55e",ic:"🌟"}:tier==="medio"?{t:"Foi bem",c:"#84cc16",ic:"✅"}:(lesao?{t:"Lesão!",c:"#ef6b6b",ic:"🤕"}:{t:"Vacilou",c:"#fb7185",ic:"😬"});
 
   const escolher=(op)=>{
-    const e=ETAPAS_PEN[etapa];
-    const baseAttr=(etapa===1&&op.key==="forte")?Math.max(...ATKEYS.map(k=>vida.at[k])):med(e.attrs(vida));
-    const confBonus=(conf-50)*0.15;
-    const raw=clamp(Math.round(baseAttr*0.9+vida.potencial*0.17+exp+confBonus+op.mod+rnd(-op.vr,op.vr)),0,100);
-    const g=grade(raw);
-    const cd=raw>=60?op.co:raw>=46?Math.round((op.co-op.cf)/2):-op.cf;
-    setLast({raw,g,cd,nome:e.nome,icon:e.icon});
-    setScores(s=>[...s,{nome:e.nome,icon:e.icon,raw,g}]);
+    const e=LANCES_PEN[etapa];
+    const a=(vida.at[op.attr]!=null?vida.at[op.attr]:50);
+    const confBonus=(conf-50)*0.30;
+    const perfilVar=op.perfil==="ousado"?16:op.perfil==="equilibrado"?9:5;
+    const perfilMod=op.perfil==="ousado"?7:op.perfil==="equilibrado"?3:0;
+    const luck=Math.round(rnd(-perfilVar,perfilVar)*0.5);
+    const sev=(typeof dificV==="function"?(dificV(vida).sev||1):1);
+    const raw=clamp(Math.round(a*1.0+vida.potencial*0.08+exp+confBonus+perfilMod+luck),0,100);
+    const tier=raw>=70?"bom":raw>=48?"medio":"ruim";
+    let lesao=false,queimou=false;
+    if(op.perfil==="ousado"&&tier==="ruim"){ if(Math.random()<(op.risco||0.12)*sev) lesao=true; else queimou=true; }
+    const g=grade(tier,lesao);
+    const cd=(tier==="bom"?10:tier==="medio"?2:-9)-(queimou?6:0);
+    setLast({raw,g,tier,narr:op[tier]||"",reacao:(e.reacao&&e.reacao[tier])||"",lesao,nome:e.tit,icon:e.ic});
+    setScores(s=>[...s,{nome:e.tit,icon:e.ic,raw,tier,g,lesao}]);
     setConf(c=>clamp(c+cd,0,100));
+    if(lesao)setLesionou(true);
     setPhase("reveal");
   };
   const proximo=()=>{
-    if(etapa>=ETAPAS_PEN.length-1){
+    if(etapa>=LANCES_PEN.length-1||lesionou){
       const sc=[...scores];const n=sc.length||1;const avg=sc.reduce((a,b)=>a+b.raw,0)/n;
-      const impressao=clamp(Math.round(avg*0.62+vida.potencial*0.10+rnd(-4,4)),0,100); // FASE A B4/B2: atributo manda, potencial empurra menos
+      const impressao=clamp(Math.round(avg*0.6+vida.potencial*0.08+rnd(-4,4))-(lesionou?20:0),0,100); // peneira v3: honesto + lesao penaliza
       const voc=vida.vocacao||posicaoIdeal(vida.at,vida.altura).pos;
       const rec=posicaoIdeal(vida.at,vida.altura).pos;
-      setFim({impressao,cortadoEm:null,recap:sc,pos:rec,voc,nivel,sug:sugestoesPos(vida.at,voc,vida.altura),dev:(()=>{const W=PESO_OVR[rec]||{};const relAt=Object.keys(vida.at).map(k=>({k,v:vida.at[k],w:W[k]||0})).filter(x=>x.w>=0.1);const forte=relAt.slice().sort((a,b)=>b.v-a.v)[0];const treinar=relAt.filter(x=>x.v<64&&(!forte||x.k!==forte.k)).sort((a,b)=>(b.w*(72-b.v))-(a.w*(72-a.v))).slice(0,2).map(x=>MACRO_NOME[x.k]||x.k);return {treinar,forte:forte?(MACRO_NOME[forte.k]||forte.k):null};})(),clubes:clubesPeneira(impressao,idade,tent,vida.estado,nivel,vida.potencial)});
+      setFim({impressao,cortadoEm:lesionou?etapa:null,recap:sc,pos:rec,voc,nivel,sug:sugestoesPos(vida.at,voc,vida.altura),dev:(()=>{const W=PESO_OVR[rec]||{};const relAt=Object.keys(vida.at).map(k=>({k,v:vida.at[k],w:W[k]||0})).filter(x=>x.w>=0.1);const forte=relAt.slice().sort((a,b)=>b.v-a.v)[0];const treinar=relAt.filter(x=>x.v<64&&(!forte||x.k!==forte.k)).sort((a,b)=>(b.w*(72-b.v))-(a.w*(72-a.v))).slice(0,2).map(x=>MACRO_NOME[x.k]||x.k);return {treinar,forte:forte?(MACRO_NOME[forte.k]||forte.k):null};})(),clubes:clubesPeneira(impressao,idade,tent,vida.estado,nivel,vida.potencial)});
     } else {setEtapa(etapa+1);setPhase("choice");}
   };
   const corFim=fim?(fim.impressao>=72?"#22c55e":fim.impressao>=52?"#84cc16":fim.impressao>=36?"#eab308":"#ef6b6b"):"#8b909a";
@@ -5990,7 +6431,7 @@ function PeneiraVida({vida,tent,onAssinar,onTentar,onTrocarPos,onMenu}){
       <button onClick={onMenu} style={{...btnGhost,fontSize:12,marginBottom:4}}>← Modos</button>
       <div style={{textAlign:"center",marginBottom:14}}>
         <div style={{fontSize:12,letterSpacing:3,color:"#FFD400",fontWeight:700,fontFamily:"Oswald,sans-serif"}}>PENEIRA DA BASE</div>
-        <h2 style={{...h1,fontSize:24,marginTop:6}}>{!started?"O grande dia":fim?"Veredito dos olheiros":`Etapa ${etapa+1} de 3`}</h2>
+        <h2 style={{...h1,fontSize:24,marginTop:6}}>{!started?"O grande dia":fim?"Veredito dos olheiros":`Lance ${etapa+1} de ${LANCES_PEN.length}`}</h2>
         <p style={sub}>{vida?.nome} · {vida?.estado}, {idade} anos · {vida?.altura}cm · {vida?.pe}</p>
       </div>
 
@@ -6001,31 +6442,32 @@ function PeneiraVida({vida,tent,onAssinar,onTentar,onTrocarPos,onMenu}){
       </div>)}
 
       {!started&&(<div>
-        <div style={{...card,marginBottom:12,fontSize:13,color:"#cbd0d8",lineHeight:1.5}}>São <b style={{color:"#fff"}}>cinco etapas</b> — físico, técnica, coletivo, posição e leitura de jogo. Em cada uma você <b style={{color:"#fff"}}>decide como jogar</b>: arriscar rende mais, mas é instável. Cada etapa vira uma <b style={{color:"#fff"}}>nota</b>; mandar bem eleva a <b style={{color:confCor}}>confiança</b> e te dá impulso na próxima. <b style={{color:"#fff"}}>Um teste ruim não te elimina</b> — no fim os olheiros somam tudo e dão o veredito, e o técnico define sua posição pelo que viu.</div>
+        <div style={{...card,marginBottom:12,fontSize:13,color:"#cbd0d8",lineHeight:1.5}}>São <b style={{color:"#fff"}}>5 lances</b> de jogo. Em cada um você <b style={{color:"#fff"}}>toma uma decisão de verdade</b> (cada opção puxa um atributo seu) e vê o lance acontecer. Mandar bem eleva a <b style={{color:confCor}}>confiança</b> e impulsiona o próximo; arriscar rende mais, mas pode <b style={{color:"#fb7185"}}>vacilar — ou até te machucar</b> e encerrar o dia. No fim o olheiro soma tudo: a maioria sai como <b style={{color:"#fff"}}>projeto pra ralar e crescer</b> — craque de cara é raro.</div>
         <div style={{fontSize:10.5,color:"#6b7280",marginBottom:12,lineHeight:1.35}}>No fim, os clubes interessados aparecem conforme sua avaliação e seu potencial — times menores acolhem mais fácil; os grandes só vêm se você impressionar.</div>
         <button onClick={()=>setStarted(true)} style={{...btnPrimary,width:"100%",fontSize:16,padding:14}}><Play size={16}/> Entrar na peneira</button>
       </div>)}
 
       {started&&!fim&&phase==="choice"&&(<div>
-        <div style={{textAlign:"center",fontSize:34,marginBottom:6}}>{ETAPAS_PEN[etapa].icon}</div>
-        <div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:18,textAlign:"center",marginBottom:4}}>{ETAPAS_PEN[etapa].nome}</div>
-        <p style={{...sub,marginBottom:14}}>{ETAPAS_PEN[etapa].pergunta}</p>
-        {ETAPAS_PEN[etapa].opcoes.map((op,i)=>(
-          <button key={op.key} onClick={()=>escolher(op)} style={{...(i===0?btnPrimary:btnSecondary),width:"100%",marginBottom:8,display:"block",textAlign:"left",padding:"11px 14px"}}>
-            <div style={{fontSize:15}}>{op.label}</div><div style={{fontSize:11,opacity:.8,marginTop:1}}>{op.d}</div>
-          </button>
-        ))}
+        <div style={{textAlign:"center",fontSize:34,marginBottom:6}}>{LANCES_PEN[etapa].ic}</div>
+        <div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:18,textAlign:"center",marginBottom:8}}>{LANCES_PEN[etapa].tit}</div>
+        <div style={{...card,marginBottom:14,fontSize:13.5,color:"#d8e6dd",lineHeight:1.5}}>{LANCES_PEN[etapa].cena}</div>
+        {LANCES_PEN[etapa].ops.map((op,i)=>{const pc=op.perfil==="ousado"?"#fb7185":op.perfil==="equilibrado"?"#eab308":"#84cc16";const pl=op.perfil==="ousado"?"⚠ arriscado":op.perfil==="equilibrado"?"~ equilibrado":"• seguro";return (
+          <button key={op.key} onClick={()=>escolher(op)} style={{...btnSecondary,width:"100%",marginBottom:8,display:"block",textAlign:"left",padding:"11px 14px"}}>
+            <div style={{fontSize:15}}>{op.label}</div><div style={{fontSize:11,marginTop:3}}><span style={{color:pc}}>{pl}</span><span style={{color:"#7a8290"}}> · {op.tag}</span></div>
+          </button>);})}
       </div>)}
 
       {started&&!fim&&phase==="reveal"&&last&&(<div style={{textAlign:"center"}}>
         <div style={{fontSize:40,marginBottom:4}}>{last.g.ic}</div>
-        <div style={{fontFamily:"Oswald,sans-serif",fontSize:22,color:last.g.c,marginBottom:6}}>{last.g.t.toUpperCase()}</div>
-        <div style={{...card,marginBottom:8}}>
-          <div style={{fontSize:12,color:"#8b909a"}}>{last.icon} {last.nome}</div>
-          <div style={{fontFamily:"Oswald,sans-serif",fontSize:30,color:last.g.c}}>{last.raw}<span style={{fontSize:13,color:"#8b909a"}}>/100</span></div>
+        <div style={{fontFamily:"Oswald,sans-serif",fontSize:22,color:last.g.c,marginBottom:8}}>{last.g.t.toUpperCase()}</div>
+        <div style={{...card,marginBottom:10,textAlign:"left"}}>
+          <div style={{fontSize:10,color:"#8b909a",letterSpacing:1.5,marginBottom:6}}>🎙️ {last.icon} {last.nome}</div>
+          <div style={{fontSize:13,color:"#d8e6dd",lineHeight:1.5}}>{last.narr}</div>
+          {last.reacao&&<div style={{fontSize:12,color:"#a7d8bd",marginTop:9,fontStyle:"italic"}}>🔎 {last.reacao}</div>}
+          {last.lesao&&<div style={{fontSize:12.5,color:"#ef6b6b",marginTop:9,fontWeight:600}}>🤕 Você se machucou na jogada — a peneira encerra aqui.</div>}
         </div>
-        <div style={{fontSize:11,color:last.cd>=0?"#22c55e":"#fb7185",marginBottom:12}}>{last.cd>0?`Confiança +${last.cd}`:last.cd<0?`Confiança ${last.cd}`:"Confiança estável"} · o olheiro anota e segue observando</div>
-        <button onClick={proximo} style={{...btnPrimary,width:"100%"}}>{etapa>=2?"Ver veredito →":"Próxima etapa →"}</button>
+        <div style={{fontSize:11,color:last.tier==="bom"?"#22c55e":last.tier==="medio"?"#eab308":"#fb7185",marginBottom:12}}>{last.tier==="bom"?"Confiança subiu — seu nome começou a circular":last.tier==="medio"?"Seguiu firme no jogo":"Confiança abalada — respira e recupera"}</div>
+        <button onClick={proximo} style={{...btnPrimary,width:"100%"}}>{(etapa>=LANCES_PEN.length-1||last.lesao)?"Ver veredito →":"Próximo lance →"}</button>
       </div>)}
 
       {fim&&(<div>
@@ -6985,6 +7427,8 @@ function ImprensaModal({vida,onClose}){
 }
 
 function CarreiraModal({vida,onClose}){
+  // FASE B E2: aba diario/timeline
+  const [aba,setAba]=React.useState("visao");
   const car=vida.carreira||[];
   const atual=vida.fase!=="peneira"?[{temp:vida.temporada,clube:vida.clube,categoria:vida.categoria,jogos:vida.jogos,gols:vida.gols,assist:vida.assist,nota:vida.jogos?+(vida.notaSoma/vida.jogos).toFixed(2):0,ovr:vida.ovr,atual:true}]:[];
   const rows=[...car,...atual];
@@ -7000,7 +7444,29 @@ function CarreiraModal({vida,onClose}){
   else if(picoOvr>=62){tier="Carreira Honesta";tierCor="#9aa0aa";}
   else {tier="Promessa";tierCor="#8b909a";}
   return (<div style={modalBg}><div style={{...modalBox,maxHeight:"92vh",overflowY:"auto"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><span style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:19}}>📊 Carreira</span><button onClick={onClose} style={{background:"none",border:"none",color:"#8b909a",cursor:"pointer"}}><X size={20}/></button></div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><span style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:19}}>📊 Carreira</span><button onClick={onClose} style={{background:"none",border:"none",color:"#8b909a",cursor:"pointer"}}><X size={20}/></button></div>
+    <div style={{display:"flex",gap:4,background:"#101216",borderRadius:10,padding:4,marginBottom:14}}>
+      {[["visao","📊 Visão"],["diario","📓 Diário"]].map(([k,lab])=>(<button key={k} data-snd="tab" onClick={()=>setAba(k)} style={{flex:1,padding:"7px 4px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"Oswald,sans-serif",fontSize:12,letterSpacing:.4,background:aba===k?"linear-gradient(180deg,#143020,#0F3B2E)":"transparent",color:aba===k?"#E2C485":"#9aa0aa"}}>{lab}</button>))}
+    </div>
+    {aba==="diario"&&(()=>{
+      // FASE B E2: timeline dos marcos. Filtra log por cats de marco e agrupa por temporada
+      const catsMarco=new Set(["titulo","raiz","lesao","sep","midia","treino","vida","sistema"]);
+      const log=(vida.log||[]).filter(e=>e&&e.m).slice().reverse();
+      const iconePorCat={titulo:"🏆",raiz:"🎯",lesao:"🤕",sep:"🗓️",midia:"📺",treino:"💪",vida:"💛",sistema:"📍"};
+      const corPorCat={titulo:"#FFD400",raiz:"#C9A24B",lesao:"#fb7185",sep:"#7fbfff",midia:"#c084fc",treino:"#7bd88f",vida:"#f0a0c0",sistema:"#9aa0aa"};
+      if(!log.length)return <div style={{textAlign:"center",fontSize:13,color:"#8b909a",padding:30}}>Ainda não há marcos. Avance algumas semanas e volte aqui — sua história vai aparecendo.</div>;
+      return (<div style={{padding:"0 2px"}}>
+        <div style={{fontSize:11,color:"#8b909a",marginBottom:10,lineHeight:1.4}}>A história do moleque, marco a marco — do mais recente pro mais antigo.</div>
+        <div style={{borderLeft:"2px solid rgba(201,162,75,.3)",paddingLeft:14,marginLeft:6}}>
+          {log.slice(0,80).map((e,i)=>{const cat=e.cat||"sistema";const ic=iconePorCat[cat]||"•";const cor=corPorCat[cat]||"#9aa0aa";return (<div key={i} style={{position:"relative",marginBottom:9}}>
+            <div style={{position:"absolute",left:-22,top:3,width:14,height:14,borderRadius:7,background:"#0F3B2E",border:`1.5px solid ${cor}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8}}>{ic}</div>
+            <div style={{fontSize:12.5,color:"#cbd0d8",lineHeight:1.45,fontFamily:"Barlow,sans-serif",padding:"2px 0"}}>{e.m}</div>
+          </div>);})}
+        </div>
+        {log.length>80&&<div style={{fontSize:10,color:"#6b7280",textAlign:"center",marginTop:8}}>+{log.length-80} marcos mais antigos no log.</div>}
+      </div>);
+    })()}
+    <div style={{display:aba==="visao"?"block":"none"}}>
     <div style={{background:`linear-gradient(135deg,${tierCor}22,#101216)`,border:`1px solid ${tierCor}55`,borderRadius:14,padding:14,marginBottom:14,textAlign:"center"}}>
       <div style={{fontSize:10,color:"#8b909a",letterSpacing:1.5}}>NÍVEL DE LEGADO</div>
       <div style={{fontFamily:"Oswald,sans-serif",fontWeight:700,fontSize:24,color:tierCor,margin:"2px 0"}}>{tier}</div>
@@ -7055,10 +7521,11 @@ function CarreiraModal({vida,onClose}){
        </div>))}
     </div>
     {(vida.conquistas||[]).length>0&&(<><SecTitle>Hall da Fama · {vida.conquistas.length} conquistas</SecTitle><div style={{...card,marginBottom:8}}>{vida.conquistas.slice().reverse().map((c,i)=><div key={i} style={{display:"flex",gap:8,alignItems:"center",padding:"6px 2px",borderBottom:i<vida.conquistas.length-1?"1px solid #1d1f25":"none"}}><Trophy size={13} color="#FFD400"/><span style={{fontSize:12,color:"#cbd0d8"}}>{c}</span></div>)}</div></>)}
+    </div>
     <button onClick={onClose} style={{...btnSecondary,width:"100%",marginTop:8}}>Fechar</button>
   </div></div>);
 }
-function PerfilModal({vida,onTreinoOpen,onComprar,onAplicar,onResgatar,onPedirAumento,onPedirAgente,onAquecer,onCacarEuropa,onContratarAgente,onPedirSaida,onMoradia,onStaff,onNegocio,onAcaoVida,onAposentar,close}){
+function PerfilModal({vida,onTreinoOpen,onComprar,onItemRaiz,onEquipar,onAplicar,onResgatar,onPedirAumento,onPedirAgente,onAquecer,onCacarEuropa,onContratarAgente,onPedirSaida,onMoradia,onStaff,onNegocio,onAcaoVida,onAposentar,close}){
   const [aba,setAba]=useState("visao");
   const t=clubeBadge(vida.clube);const ft=famaTier(vida.reputacao);const tr=traitsDe(vida);
   const media=vida.jogos>0?(vida.notaSoma/vida.jogos).toFixed(1):"–";
@@ -7077,7 +7544,7 @@ function PerfilModal({vida,onTreinoOpen,onComprar,onAplicar,onResgatar,onPedirAu
 
       {aba==="visao"&&(<div>
         <div style={{display:"flex",alignItems:"center",gap:10,background:"#12141a",border:"1px solid #20222a",borderRadius:14,padding:12,marginBottom:12}}>
-          <Avatar nome={vida.nome} size={52}/>
+          <Avatar nome={vida.nome} size={52} equipados={vida.equipados}/>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontFamily:"Oswald,sans-serif",color:"#F4EFE6",fontSize:17,lineHeight:1,letterSpacing:.3,display:"flex",alignItems:"center",gap:6}}>{vida.nome}{vida.selecao?<BandeiraBR size={20}/>:null}</div>
             <div style={{fontSize:11,color:"#8b909a",marginTop:3,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><span>{vida.idade} anos · {vida.pos}</span>{vida.estado?<BandeiraUF uf={vida.estado}/>:null}</div>
@@ -7265,6 +7732,30 @@ function PerfilModal({vida,onTreinoOpen,onComprar,onAplicar,onResgatar,onPedirAu
             <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,color:"#e6e9ee",fontFamily:"Oswald,sans-serif"}}>{a.nome}</div><div style={{fontSize:10.5,color:"#7f8794",lineHeight:1.3}}>{a.desc}</div></div>
             <div style={{textAlign:"right"}}><div style={{fontSize:11,color:"#8b909a"}}>{fmtDin(a.mes)}/mês</div>{tem?<button onClick={()=>onStaff(key)} style={{marginTop:4,background:"transparent",color:"#fb7185",border:"1px solid #5a2230",borderRadius:7,padding:"4px 10px",fontSize:11,cursor:"pointer",fontFamily:"Oswald,sans-serif"}}>Dispensar</button>:<button onClick={()=>onStaff(key)} disabled={!pode} style={{marginTop:4,background:pode?"#22c55e":"#2a2d35",color:pode?"#04140a":"#727b87",border:"none",borderRadius:7,padding:"4px 12px",fontSize:11,fontWeight:700,cursor:pode?"pointer":"default",fontFamily:"Oswald,sans-serif"}}>Contratar</button>}</div>
           </div>);})}
+        {/* FASE C C1 + C2: Loja raiz polida Meridian, agrupada por categoria */}
+        {onItemRaiz&&typeof ITENS_RAIZ!=="undefined"&&(<>
+          <SecTitle>🎒 Loja raiz</SecTitle>
+          <div style={{fontSize:11,color:"#6b7280",margin:"2px 2px 9px",lineHeight:1.4}}>Item pequeno, efeito real. <b style={{color:"#a7d8bd"}}>Equipado</b> = passivo contínuo · <b style={{color:"#a7d8bd"}}>Consumível</b> = uso único.</div>
+          {(vida.equipados&&Object.keys(vida.equipados).length>0)&&(<div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",marginBottom:10,background:"linear-gradient(180deg,#0F3B2E,#082720)",border:"1px solid #C9A24B",borderRadius:10}}>
+            <span style={{fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#E2C485"}}>EQUIPADO</span>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5,flex:1}}>{Object.values(vida.equipados).map(id=>{const it=ITENS_RAIZ[id];return it?<span key={id} style={{fontSize:11,color:"#F4EFE6",fontFamily:"Barlow,sans-serif",padding:"2px 8px",background:"rgba(201,162,75,.15)",border:"1px solid rgba(201,162,75,.35)",borderRadius:14}}>{it.ic} {it.nome}</span>:null;}).filter(Boolean)}</div>
+          </div>)}
+          {[["chuteira","👞 Chuteiras"],["alimentacao","🍱 Alimentação"],["visual","💈 Visual"],["equipamento","🛡️ Equipamento"]].map(([catKey,catLabel])=>{const items=Object.entries(ITENS_RAIZ).filter(([,it])=>it.cat===catKey);if(!items.length)return null;return (<div key={catKey} style={{marginBottom:10}}>
+            <div style={{fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:1.8,color:"#8a6d2f",margin:"6px 2px 5px"}}>{catLabel}</div>
+            {items.map(([id,it])=>{const equipado=it.slot&&(vida.equipados||{})[it.slot]===id;const pode=vida.dinheiro>=it.custo;const ef=it.ef||{};const efs=[];if(ef.energia)efs.push((ef.energia>0?"+":"")+ef.energia+" energia");if(ef.moral)efs.push((ef.moral>0?"+":"")+ef.moral+" moral");if(ef.nota!=null)efs.push((ef.nota>0?"+":"")+ef.nota.toFixed(2)+" nota");if(ef.risco_lesao!=null)efs.push((ef.risco_lesao>0?"+":"")+ef.risco_lesao+"% lesão");if(ef.imagem)efs.push((ef.imagem>0?"+":"")+ef.imagem+" imagem");if(ef.atributos)efs.push("attr+");return (
+              <div key={id} style={{display:"flex",alignItems:"center",gap:10,background:equipado?"linear-gradient(180deg,#0f2418,#0a1610)":"#15171c",border:`1px solid ${equipado?"#C9A24B":"#20222a"}`,borderRadius:10,padding:"9px 11px",marginBottom:6,minHeight:44}}>
+                <span style={{fontSize:22}}>{it.ic}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,color:"#e6e9ee",fontFamily:"Oswald,sans-serif",letterSpacing:.2}}>{it.nome}{equipado?<span style={{color:"#C9A24B",marginLeft:5,fontSize:11}}>✓</span>:null}</div>
+                  <div style={{fontSize:10.5,color:"#8a6d2f",lineHeight:1.3,fontFamily:"Barlow,sans-serif"}}>{it.tipo==="durable"?"durável":"consumível"} · {efs.join(" · ")||"efeito leve"}</div>
+                </div>
+                <div style={{textAlign:"right",minWidth:74}}>
+                  <div style={{fontSize:11,color:"#FFD400",fontFamily:"'IBM Plex Mono',monospace",fontVariantNumeric:"tabular-nums"}}>{fmtDin(it.custo)}</div>
+                  <button onClick={()=>onItemRaiz(id)} disabled={!pode||equipado} style={{marginTop:4,background:equipado?"transparent":pode?"linear-gradient(135deg,#0F3B2E,#1f7a48)":"#2a2d35",color:equipado?"#C9A24B":pode?"#F4EFE6":"#727b87",border:equipado?"1px solid #C9A24B":pode?"1px solid #C9A24B":"none",borderRadius:8,padding:"5px 12px",fontSize:11,fontWeight:700,cursor:pode&&!equipado?"pointer":"default",fontFamily:"Oswald,sans-serif",letterSpacing:.5,minHeight:24}}>{equipado?"EQUIPADO":(it.tipo==="durable"?"COMPRAR":"USAR")}</button>
+                </div>
+              </div>);})}
+          </div>);})}
+        </>)}
         <SecTitle>Negócios</SecTitle>
         <div style={{fontSize:11,color:"#6b7280",margin:"2px 2px 7px",lineHeight:1.4}}>Invista o que ganha em campo: renda passiva todo mês — continua pingando até depois de pendurar as chuteiras.{rendaNegociosMes(vida)>0?` Hoje: +${fmtDin(rendaNegociosMes(vida))}/mês.`:""}</div>
         {NEGOCIO_ORD.map(key=>{const n=NEGOCIOS[key];const tem=(vida.negocios||[]).includes(key);const pode=!tem&&vida.dinheiro>=n.custo;return (
@@ -7484,7 +7975,7 @@ function CardModalVida({card,vida,onInfo,onEscolha,onTransfer,onAposentar,onCopa
   else if(card.tipo==="jornalista"){conteudo=(<div style={{padding:"4px 2px"}}><div style={{textAlign:"center",marginBottom:10}}>
     <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"4px 10px",borderRadius:30,background:"linear-gradient(180deg,#143020,#0F3B2E)",border:"1px solid #C9A24B",fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#E2C485",textTransform:"uppercase",fontWeight:700,marginBottom:8}}>🎤 Coletiva pós-jogo</div>
     <div style={{fontFamily:"Oswald,sans-serif",color:"#F4EFE6",fontSize:18,letterSpacing:.3}}>Como você responde?</div>
-  </div><div style={{fontFamily:"'Crimson Pro',Georgia,serif",fontStyle:"italic",fontSize:14,color:"#E2C485",lineHeight:1.55,padding:"12px 14px",background:"linear-gradient(180deg,#0d1814,#0a0f0c)",border:"1px solid rgba(201,162,75,.35)",borderLeft:"3px solid #C9A24B",borderRadius:10,marginBottom:14}}>"{card.pergunta}"</div><div style={{fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#8a6d2f",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>Escolha o tom da resposta</div>{Object.entries(TONS_POST).map(([k,t])=>(<button key={k} onClick={()=>onEscolha(x=>{const ganhoBase=k==="provocativo"?rnd(800,4000):k==="confiante"?rnd(400,1800):rnd(300,1200);const ganho=ganhoSeguidores(x,ganhoBase);const pBom=k==="provocativo"?0.5:k==="confiante"?0.8:0.85;const desfecho=Math.random()<pBom?"bom":"ruim";const txtDesf=typeof pickDesfechoEntrevista==="function"?pickDesfechoEntrevista(k,desfecho,x.nome):"";let nv={...x,seguidores:Math.max(0,(x.seguidores||30000)+ganho),torcida:clamp((x.torcida||50)+t.efeitos.torcida,0,100),imagem:clamp((x.imagem||50)+(t.efeitos.imagem||0),0,100),reputacao:clamp((x.reputacao||0)+(t.efeitos.fama||0),0,100),relacaoTecnico:clamp((x.relacaoTecnico||60)+(t.efeitos.relacaoTecnico||0)+(k==="provocativo"?-3:k==="tecnico"?+1:0),0,100),log:[...x.log,{m:`🎤 Entrevista (${t.nome.toLowerCase()}): +${fmtSeguidores(ganho)} seguidores.${txtDesf?" "+txtDesf:""}`,cat:"midia"}]};return nv;})} style={{display:"flex",alignItems:"center",gap:11,width:"100%",cursor:"pointer",textAlign:"left",background:"linear-gradient(180deg,#0F3B2E,#082720)",border:"1px solid rgba(201,162,75,.35)",borderLeft:`3px solid ${t.cor}`,padding:"10px 12px",marginBottom:7,borderRadius:10,minHeight:48,boxShadow:"inset 0 1px 0 rgba(201,162,75,.1)"}}><div style={{fontSize:20,width:24,textAlign:"center"}}>{t.ic}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:13.5,color:"#F4EFE6",fontFamily:"Oswald,sans-serif",letterSpacing:.3}}>{t.nome}</div><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#a7d8bd",marginTop:2,letterSpacing:.3,fontVariantNumeric:"tabular-nums"}}>Torcida {t.efeitos.torcida>=0?"+":""}{t.efeitos.torcida} · Moral {t.efeitos.moralElenco>=0?"+":""}{t.efeitos.moralElenco}</div></div><div style={{width:6,height:6,borderRadius:"50%",background:t.cor,boxShadow:`0 0 8px ${t.cor}`}}/></button>))}</div>);}
+  </div><div style={{fontFamily:"'Crimson Pro',Georgia,serif",fontStyle:"italic",fontSize:14,color:"#E2C485",lineHeight:1.55,padding:"12px 14px",background:"linear-gradient(180deg,#0d1814,#0a0f0c)",border:"1px solid rgba(201,162,75,.35)",borderLeft:"3px solid #C9A24B",borderRadius:10,marginBottom:14}}>"{card.pergunta}"</div><div style={{fontFamily:"Oswald,sans-serif",fontSize:10,letterSpacing:2,color:"#8a6d2f",textTransform:"uppercase",marginBottom:8,fontWeight:700}}>Escolha o tom — o resultado aparece depois, na sua história</div>{Object.entries(TONS_POST).map(([k,t])=>(<button key={k} onClick={()=>onEscolha(x=>{const ganho=ganhoSeguidores(x,k==="provocativo"?rnd(800,4000):k==="confiante"?rnd(400,1800):rnd(300,1200));return {...x,seguidores:Math.max(0,(x.seguidores||30000)+ganho),entrevistaPendente:{tom:k,semana:semanaAbs(x)},ultimaEntrevista:semanaAbs(x),log:[...x.log,{m:`🎤 Respondeu a coletiva (${t.nome.toLowerCase()}). A repercussao vem por ai...`,cat:"midia"}]};})} style={{display:"flex",alignItems:"center",gap:11,width:"100%",cursor:"pointer",textAlign:"left",background:"linear-gradient(180deg,#0F3B2E,#082720)",border:"1px solid rgba(201,162,75,.35)",borderLeft:`3px solid ${t.cor}`,padding:"10px 12px",marginBottom:7,borderRadius:10,minHeight:48,boxShadow:"inset 0 1px 0 rgba(201,162,75,.1)"}}><div style={{fontSize:20,width:24,textAlign:"center"}}>{t.ic}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:13.5,color:"#F4EFE6",fontFamily:"Oswald,sans-serif",letterSpacing:.3}}>{t.nome}</div></div><div style={{width:6,height:6,borderRadius:"50%",background:t.cor,boxShadow:`0 0 8px ${t.cor}`}}/></button>))}</div>);}
   else if(card.tipo==="evento_midia"){conteudo=(<div style={{textAlign:"center"}}><div style={{fontSize:42}}>{card.ic||"📰"}</div><div style={{fontFamily:"Oswald,sans-serif",color:card.cor||"#fff",fontSize:20,margin:"6px 0"}}>{card.titulo}</div><div style={{fontSize:14,color:"#cbd0d8",marginBottom:14,lineHeight:1.5}}>{card.texto}</div>{card.efeitos&&<div style={{background:"#0d0f13",border:"1px solid #20222a",borderRadius:10,padding:"8px 11px",marginBottom:14,fontSize:11.5,color:"#9aa0aa",textAlign:"left"}}>{Object.entries(card.efeitos).filter(([k,v])=>v!==0).slice(0,5).map(([k,v])=>(<div key={k} style={{padding:"2px 0",color:v>0?"#22c55e":"#fb7185"}}>{k==="seguidores"?"📱 Seguidores":k==="imagem"?"📸 Imagem":k==="torcida"?"🏟️ Torcida":k==="relacaoTecnico"?"🧑‍🏫 Técnico":k==="relacaoClube"?"💼 Clube":k==="moralElenco"?"🧠 Moral elenco":k==="fama"?"⭐ Fama":k==="heatRival"?"⚔️ Rival":k}: {v>0?"+":""}{typeof v==="number"&&v<1&&v>-1?Math.round(v*100)+"%":v}</div>))}</div>}<button onClick={onInfo} style={{...btnPrimary,width:"100%"}}>Entendi</button></div>);}
   else if(card.tipo==="potencial"){const up=card.dir==="up";const e=estimativaPot(vida);conteudo=(<div style={{textAlign:"center"}}><div style={{fontSize:42}}>{up?"🚀":"📉"}</div><div style={{fontSize:10,color:"#8b909a",letterSpacing:1.5,marginTop:6}}>REAVALIAÇÃO DOS OLHEIROS</div><div style={{fontFamily:"Oswald,sans-serif",color:up?"#22c55e":"#ef6b6b",fontSize:21,margin:"4px 0 8px"}}>{up?"Seu teto subiu":"Seu teto foi revisado pra baixo"}</div><div style={{fontSize:13.5,color:"#cbd0d8",lineHeight:1.5,maxWidth:300,margin:"0 auto"}}>{up?"Seu rendimento fez os olheiros reverem pra cima o que você pode chegar a ser. O mercado começa a te enxergar diferente.":"Os olheiros revisaram pra baixo a expectativa sobre você. Dá pra reverter — mas a vitrine ficou mais dura."}</div><div style={{marginTop:12,padding:"8px 11px",background:"#0d0f13",border:"1px solid #20222a",borderRadius:10,fontSize:12,color:"#9aa0aa"}}>Estimativa atual: <b style={{color:"#cbd0d8"}}>{e.tier||""}</b></div><button onClick={onInfo} style={{...btnPrimary,width:"100%",marginTop:14}}>{up?"Vou continuar!":"Vou virar o jogo"}</button></div>);}
   else if(card.tipo==="avaliacao"){const Stars=({n,cor})=>{const full=Math.floor(n||0),half=(n||0)-full>=0.5,empty=5-full-(half?1:0);return <span style={{fontFamily:"Oswald,sans-serif",letterSpacing:1}}><span style={{color:cor,fontSize:16}}>{"★".repeat(full)}{half?"½":""}</span><span style={{color:"#33373f",fontSize:16}}>{"★".repeat(Math.max(0,empty))}</span></span>;};const ca=card.ca||0,pa=card.pa||0;conteudo=(<div style={{textAlign:"center"}}><div style={{fontSize:40}}>📋</div><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20,margin:"6px 0"}}>Relatório anual do olheiro</div><div style={{fontSize:13,color:"#cbd0d8",marginBottom:8}}>{card.cat||"Profissional"} · {card.idade} anos · OVR {card.ovr} {card.delta>0?<span style={{color:"#22c55e"}}>(+{card.delta} no ano)</span>:card.delta<0?<span style={{color:"#f59e0b"}}>({card.delta})</span>:<span style={{color:"#8b909a"}}>(estável)</span>}</div><div style={{display:"flex",gap:8,marginBottom:10}}><div style={{flex:1,background:"#0d0f13",borderRadius:10,padding:"8px 10px"}}><div style={{fontSize:9,color:"#8b909a",letterSpacing:1,marginBottom:3}}>HABILIDADE ATUAL</div><Stars n={ca} cor="#cbd0d8"/><div style={{fontSize:10,color:"#7f8794",marginTop:3}}>{ca}/5</div></div><div style={{flex:1,background:"#0d0f13",borderRadius:10,padding:"8px 10px"}}><div style={{fontSize:9,color:"#8b909a",letterSpacing:1,marginBottom:3}}>POTENCIAL</div>{card.paPrecise?<Stars n={pa} cor="#FFD400"/>:(()=>{const sol=Math.round(card.paMin||0),mx=Math.round(card.paMax||0),maybe=Math.max(0,mx-sol),emp=Math.max(0,5-sol-maybe);return <span style={{fontFamily:"Oswald,sans-serif",fontSize:16,letterSpacing:1}}><span style={{color:"#FFD400"}}>{"★".repeat(sol)}</span><span style={{color:"#6b5a16"}}>{"★".repeat(maybe)}</span><span style={{color:"#33373f"}}>{"★".repeat(emp)}</span></span>;})()}<div style={{fontSize:10,color:"#7f8794",marginTop:3}}>{card.paPrecise?`${pa}/5 (confirmado)`:`~${card.paMin}–${card.paMax}/5 · ${Math.round(card.potRev||0)}% revelado`}</div></div></div><div style={{fontSize:14,color:card.cor,marginBottom:8,fontFamily:"Oswald,sans-serif"}}>Evolução {card.ritmo}</div><div style={{fontSize:12,color:"#8b909a",marginBottom:14,lineHeight:1.5}}>Ponto forte: <b style={{color:"#cbd0d8"}}>{card.forte}</b> · a lapidar: <b style={{color:"#cbd0d8"}}>{card.fraco}</b>{card.esf?` · esforço ${card.esf}`:""}</div><button onClick={onInfo} style={{...btnPrimary,width:"100%"}}>Entendi</button></div>);}
@@ -8536,6 +9027,11 @@ function Menu({setModo}){
         <div style={{width:46,height:46,borderRadius:13,background:"rgba(34,197,94,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(34,197,94,.3)"}}><Activity size={26} color="#34d671"/></div>
         <div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20}}>Modo Carreira</div><div style={{fontSize:12,color:"#a7d8bd",marginTop:2}}>Viva a vida de um jogador: da peneira ao auge — e além das chuteiras.</div></div>
         <ChevronRight color="#34d671"/>
+      </button>
+      <button onClick={()=>_setModoComAudio("manager")} className="bm-pop" style={{...modoCard,background:"linear-gradient(135deg,#10233a,#0a1422)",borderColor:"#5b8def",marginTop:14,boxShadow:"0 18px 40px -22px rgba(91,141,239,.5)"}}>
+        <div style={{width:46,height:46,borderRadius:13,background:"rgba(91,141,239,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(91,141,239,.3)"}}><Shield size={26} color="#7ea6f5"/></div>
+        <div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"Oswald,sans-serif",color:"#fff",fontSize:20}}>Modo Manager <span style={{fontSize:10,letterSpacing:1.5,color:"#7ea6f5",border:"1px solid rgba(91,141,239,.5)",borderRadius:20,padding:"2px 7px",marginLeft:4,verticalAlign:"middle"}}>BETA</span></div><div style={{fontSize:12,color:"#a7d8bd",marginTop:2}}>Comande um clube: escale o XI, mercado, finanças e partidas ao vivo.</div></div>
+        <ChevronRight color="#7ea6f5"/>
       </button>
       <button onClick={()=>setShowHall(true)} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginTop:18,padding:"12px",minHeight:48,background:"linear-gradient(180deg, rgba(201,162,75,.12), rgba(201,162,75,.04))",border:"1px solid rgba(201,162,75,.35)",borderRadius:12,color:"#E2C485",fontFamily:"Oswald,sans-serif",fontSize:13,letterSpacing:2,textTransform:"uppercase",fontWeight:700,cursor:"pointer",boxShadow:"inset 0 1px 0 rgba(201,162,75,.12), 0 8px 22px -16px rgba(201,162,75,.4)"}}><Trofeu size={18} glow={false}/> Hall da Fama {hallList.length>0?<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"#C9A24B",letterSpacing:.5,fontVariantNumeric:"tabular-nums"}}>{hallList.length}/5</span>:null}</button>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,marginTop:18}}><div style={{display:"inline-flex",alignItems:"center",gap:7,opacity:.9}}><svg viewBox="0 0 88 90" width="15" height="15" aria-hidden="true"><path d="M44 4 Q80 4 80 40 Q80 70 44 86 Q8 70 8 40 Q8 4 44 4 Z" fill="none" stroke="#FF6A2B" strokeWidth="9" strokeLinejoin="round"/><path d="M48 22 L34 48 L46 48 L40 70 L60 40 L48 40 Z" fill="#FF6A2B"/></svg><span style={{fontFamily:"Oswald,sans-serif",fontSize:11,letterSpacing:2,color:"#9a8f7a"}}>uma <span style={{color:"#C9A24B"}}>ROCKER LAB</span> game</span></div><div style={{fontSize:11,color:"#727b87",fontFamily:"Oswald,sans-serif",letterSpacing:1}}>Footy Life Manager · {VERSAO}</div></div>
