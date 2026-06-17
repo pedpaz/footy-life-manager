@@ -36,6 +36,65 @@ body{
 .campo-wrap{width:100%;max-width:560px;position:relative;touch-action:none;}
 canvas{width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--borda);background:#1e6830;}
 
+/* ─── MODO DEITADO ───────────────────────────────────────────────── */
+#playArea{display:contents;}
+body.deitado, body.deitadoLand{overflow:hidden;}
+body.deitado #playArea, body.deitadoLand #playArea{
+  display:block; position:fixed; z-index:200; background:var(--fundo); box-sizing:border-box;
+}
+
+/* ===== RETRATO: gira 90 graus, campo cheio, controles flutuando ===== */
+body.deitado #playArea{
+  top:50%; left:50%; width:100vh; height:100vw;
+  transform:translate(-50%,-50%) rotate(90deg); transform-origin:center center;
+}
+body.deitado #playArea .campo-wrap{ position:absolute; inset:0; width:100%; height:100%; max-width:none; margin:0; display:flex; align-items:center; justify-content:center; }
+body.deitado #playArea canvas#campo{ height:100%; width:auto; max-width:100%; display:block; }
+body.deitado #playArea .placar{ position:absolute; top:5px; left:50%; transform:translateX(-50%); width:auto; max-width:94%; margin:0; z-index:10; background:rgba(10,11,14,.62); padding:3px 16px; }
+body.deitado #playArea .controles{ position:absolute; bottom:7px; left:50%; transform:translateX(-50%); width:auto; margin:0; z-index:10; display:flex; gap:8px; }
+body.deitado #playArea .controles .barra{ width:auto; margin:0; padding:9px 20px; font-size:14px; }
+body.deitado .gol-flash{transform:translate(-50%,-50%) rotate(90deg) scale(.5);}
+body.deitado .gol-flash.show{transform:translate(-50%,-50%) rotate(90deg) scale(1.05);}
+body.deitado .gol-flash.hide{transform:translate(-50%,-50%) rotate(90deg) scale(1.4);}
+body.deitado .sec-label, body.deitado #evLista{ display:none; }
+
+/* ===== PAISAGEM: dashboard 3 colunas (esq=TATICA | campo | dir=HISTORIA) ===== */
+body.deitadoLand #playArea{ --col: clamp(118px, 21vw, 186px); inset:0; width:100vw; height:100vh; }
+body.deitadoLand #playArea .campo-wrap{ position:absolute; top:0; bottom:0; left:var(--col); right:var(--col); width:auto; height:auto; max-width:none; margin:0; display:flex; align-items:center; justify-content:center; }
+body.deitadoLand #playArea canvas#campo{ width:auto; height:auto; max-width:100%; max-height:100%; display:block; margin:auto; }
+/* paineis de fundo */
+#dashL,#dashR{ display:none; }
+body.deitadoLand #dashL, body.deitadoLand #dashR{ display:block; position:fixed; top:0; bottom:0; width:var(--col); background:linear-gradient(#0d1014,#090a0d); z-index:6; box-sizing:border-box; padding:6px 7px; }
+body.deitadoLand #dashL{ left:0; border-right:1px solid #1b2130; }
+body.deitadoLand #dashR{ right:0; border-left:1px solid #1b2130; }
+.dash-tit{ font-family:'Barlow Condensed',sans-serif; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#5a6170; text-align:center; padding:1px 0 6px; }
+/* ===== PLACAR flutuando no topo do campo (centro) ===== */
+body.deitadoLand #playArea .placar{ position:fixed; top:5px; left:50%; transform:translateX(-50%); width:auto; max-width:58vw; margin:0; z-index:11; padding:3px 14px; flex-wrap:nowrap; align-items:center; justify-content:center; gap:4px 8px; background:rgba(10,11,14,.6); border:none; border-radius:8px; }
+body.deitadoLand #playArea .placar .time-nome, body.deitadoLand #playArea .placar .time-sigla{ display:none; }
+body.deitadoLand #playArea .placar .gols-txt{ font-size:20px; }
+body.deitadoLand #playArea .placar .centro-placar{ min-width:0; }
+/* ===== ESQUERDA: tatica + jogador + radar + pausar ===== */
+body.deitadoLand #btnMent{ position:fixed; left:7px; top:24px; width:calc(var(--col) - 14px); height:auto; min-width:0; padding:7px 4px; z-index:9; justify-content:center; font-size:12px; }
+#radarCv, #meuPainel{ display:none; }
+body.deitadoLand #meuPainel{ display:block; position:fixed; left:7px; top:60px; width:calc(var(--col) - 14px); z-index:9; }
+body.deitadoLand #radarCv{ display:block; position:fixed; left:18px; bottom:52px; width:calc(var(--col) - 36px); height:auto; z-index:9; border:1px solid #1b2130; border-radius:4px; }
+body.deitadoLand #playArea .controles{ position:fixed; left:7px; right:auto; bottom:8px; transform:none; width:calc(var(--col) - 14px); margin:0; z-index:9; display:flex; flex-direction:column; gap:5px; }
+body.deitadoLand #playArea .controles .barra{ width:100%; margin:0; padding:8px 6px; font-size:13px; }
+/* ===== DIREITA: historia em cima + botoes do jogo embaixo ===== */
+body.deitadoLand .sec-label{ position:fixed; right:7px; top:6px; width:calc(var(--col) - 14px); z-index:9; margin:0; text-align:center; }
+body.deitadoLand #evLista{ position:fixed; right:7px; top:24px; bottom:158px; width:calc(var(--col) - 14px); max-height:none; min-height:0; z-index:9; margin:0; background:transparent; border:none; padding:0; }
+body.deitadoLand #playArea .acao{ position:fixed; z-index:10; width:54px; height:54px; font-size:11px; }
+/* cluster escalonado (diamante) no rodape da direita — CORRER/Drible mais acima */
+body.deitadoLand #playArea #btnA{ right:64px; bottom:12px; left:auto; top:auto; }
+body.deitadoLand #playArea #btnB{ right:8px; bottom:42px; left:auto; top:auto; }
+body.deitadoLand #playArea #btnCruz{ right:64px; bottom:74px; left:auto; top:auto; width:46px; height:46px; }
+body.deitadoLand #playArea #btnDrible{ right:8px; bottom:104px; left:auto; top:auto; width:46px; height:46px; }
+.lp-lab{ font-family:'Barlow Condensed',sans-serif; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:#5a6170; }
+.lp-bar{ height:7px; background:#1a1f29; border-radius:4px; overflow:hidden; margin-top:3px; }
+.lp-fill{ height:100%; width:100%; background:#22a34f; }
+.lp-nota{ font-family:'Oswald',sans-serif; font-size:26px; font-weight:700; line-height:1; color:#f5c800; }
+.lp-stats{ font-size:12px; color:#cbd0d8; margin-top:6px; line-height:1.6; }
+
 #touch{position:absolute;inset:0;pointer-events:none;}
 #joyZona{position:absolute;left:0;bottom:0;width:55%;height:75%;pointer-events:auto;}
 #joyBase{position:absolute;width:96px;height:96px;border-radius:50%;
@@ -138,6 +197,7 @@ select{flex:1;background:#1a1e26;border:1px solid var(--borda);color:var(--texto
 <!-- JOGO -->
 <div id="jogoPanel" style="display:none;width:100%;flex-direction:column;align-items:center;gap:10px;">
 
+  <div id="playArea">
   <div class="placar">
     <div class="time-bloco">
       <div class="escudo" id="escudoA"></div>
@@ -167,17 +227,30 @@ select{flex:1;background:#1a1e26;border:1px solid var(--borda);color:var(--texto
       <button id="btnSom">🔊</button>
     </div>
   </div>
-
-  <div class="dica" id="dica">Arraste no canto esquerdo pra mover · <b>A</b> toque = passe/pedir/roubar, <b>segura A</b> = lançamento · <b>B</b> segura pra chute mais forte / correr · <b>L</b> lançamento (teclado)</div>
-
-  <div class="sec-label">Lance a lance</div>
-  <div class="eventos" id="evLista"></div>
-
   <div class="controles">
     <button class="barra btn-p" id="btnPlay" onclick="togglePausa()">▶ Apitar início</button>
     <button class="barra btn-s" id="btnNova" style="display:none;" onclick="voltarSetup()">↺ Nova</button>
     <button class="barra btn-s" id="btnLog" style="display:none;margin-top:6px;background:#10131a;border:1px solid #2a4a6a;color:#9cc4f0" onclick="baixarLog()">📥 Baixar log do jogo</button>
   </div>
+  <div id="dashL"><div class="dash-tit">Tática</div></div>
+  <div id="dashR"></div>
+  <canvas id="radarCv" width="132" height="85"></canvas>
+  <div id="meuPainel">
+    <div class="lp-lab">Fôlego</div>
+    <div class="lp-bar"><div id="lpFol" class="lp-fill"></div></div>
+    <div class="lp-lab" style="margin-top:8px">Nota ao vivo</div>
+    <div id="lpNota" class="lp-nota">—</div>
+    <div id="lpStats" class="lp-stats"></div>
+  </div>
+  <div class="sec-label">Lance a lance</div>
+  <div class="eventos" id="evLista"></div>
+  </div><!-- /#playArea -->
+
+  <div class="dica" id="dica">Arraste no canto esquerdo pra mover · <b>A</b> toque = passe/pedir/roubar, <b>segura A</b> = lançamento · <b>B</b> segura pra chute mais forte / correr · <b>L</b> lançamento (teclado)</div>
+
+
+
+
 
   <div class="fim" id="fimPanel">
     <div class="fim-label">Fim de Jogo</div>
@@ -366,17 +439,30 @@ const joyZona=document.getElementById('joyZona');
 const joyBase=document.getElementById('joyBase');
 const joyKnob=document.getElementById('joyKnob');
 let joyPid=null;
+// Converte (clientX,clientY) p/ coordenadas LOCAIS do campoWrap.
+// No modo deitado o campoWrap está girado +90° (CSS rotate(90deg)); a rotação
+// preserva o centro, então invertemos via offset relativo ao centro do AABB.
+function wrapLocal(clientX,clientY){
+  const r=document.getElementById('campoWrap').getBoundingClientRect();
+  if(document.body.classList.contains('deitado')){
+    const cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const sx=clientX-cx, sy=clientY-cy;          // offset na tela
+    // inverso de rotate(90deg): lx=sy, ly=-sx ; localW=r.height, localH=r.width
+    return { x:r.height/2 + sy, y:r.width/2 - sx };
+  }
+  return { x:clientX-r.left, y:clientY-r.top };
+}
 joyZona.addEventListener('pointerdown',e=>{
   joyPid=e.pointerId; joyZona.setPointerCapture(joyPid);
-  const r=document.getElementById('campoWrap').getBoundingClientRect();
-  joy.active=true; joy.ox=e.clientX-r.left; joy.oy=e.clientY-r.top;
+  const p=wrapLocal(e.clientX,e.clientY);
+  joy.active=true; joy.ox=p.x; joy.oy=p.y;
   joyBase.style.display='block'; joyBase.style.left=joy.ox+'px'; joyBase.style.top=joy.oy+'px';
   joyKnob.style.left='50%'; joyKnob.style.top='50%';
 });
 joyZona.addEventListener('pointermove',e=>{
   if(!joy.active||e.pointerId!==joyPid)return;
-  const r=document.getElementById('campoWrap').getBoundingClientRect();
-  let dx=(e.clientX-r.left)-joy.ox, dy=(e.clientY-r.top)-joy.oy;
+  const p=wrapLocal(e.clientX,e.clientY);
+  let dx=p.x-joy.ox, dy=p.y-joy.oy;
   const m=Math.hypot(dx,dy), max=46;
   if(m>max){dx=dx/m*max;dy=dy/m*max;}
   joy.nx=dx/max; joy.ny=dy/max;
@@ -385,6 +471,21 @@ joyZona.addEventListener('pointermove',e=>{
 function soltarJoy(e){ if(e.pointerId!==joyPid)return; joy.active=false; joy.nx=0; joy.ny=0; joyBase.style.display='none'; joyPid=null; }
 joyZona.addEventListener('pointerup',soltarJoy);
 joyZona.addEventListener('pointercancel',soltarJoy);
+
+// ─── Modo deitado: força paisagem enquanto o campo está em jogo ─────
+let _emPartida=false;
+function aplicarDeitado(){
+  const w=window.innerWidth, h=window.innerHeight;
+  let rot=false, land=false;
+  if(_emPartida){
+    if(h>w) rot=true;            // retrato → gira 90° (paisagem forçada)
+    else if(h<=620) land=true;  // celular deitado (paisagem curta) → tela cheia sem girar
+    // desktop (paisagem alta) → layout normal
+  }
+  document.body.classList.toggle('deitado', rot);
+  document.body.classList.toggle('deitadoLand', land);
+}
+['resize','orientationchange'].forEach(ev=>window.addEventListener(ev,aplicarDeitado));
 
 // Botões
 const btnA=document.getElementById('btnA'), btnB=document.getElementById('btnB');
@@ -1389,6 +1490,26 @@ function desenharReplay(){
 }
 
 /* ─── RENDER (com câmera) ────────────────────────────────────────── */
+function desenharMinimapa(c,mx,my,mw,mh){
+  c.fillStyle='rgba(8,12,10,.68)'; c.fillRect(mx,my,mw,mh);
+  c.strokeStyle='rgba(255,255,255,.25)'; c.lineWidth=1; c.strokeRect(mx,my,mw,mh);
+  c.beginPath();c.moveTo(mx+mw/2,my);c.lineTo(mx+mw/2,my+mh);c.stroke();
+  const sx=mw/FW, sy=mh/FH;
+  const dot=(wx,wy,col,r)=>{c.beginPath();c.arc(mx+wx*sx,my+wy*sy,r,0,7);c.fillStyle=col;c.fill();};
+  G.jogB.forEach(j=>dot(j.x,j.y,G.cfgB.time.cor,2));
+  G.jogA.forEach(j=>{if(!j.controlado)dot(j.x,j.y,G.cfgA.time.cor,2);});
+  if(G.eu) dot(G.eu.x,G.eu.y,'#fff',2.8);
+  dot(G.bola.x,G.bola.y,'#f5c800',2);
+}
+function atualizarPainelLat(){
+  if(!G||!G.eu||!document.body.classList.contains('deitadoLand'))return;
+  const fol=document.getElementById('lpFol');
+  if(fol){ const s=Math.max(0,Math.min(100,G.eu.stamina||0)); fol.style.width=s+'%'; fol.style.background=s>50?'#22a34f':s>25?'#f5c800':'#c0392b'; }
+  const nd=document.getElementById('lpNota');
+  if(nd){ const n=notaAoVivo(); nd.textContent=n.toFixed(1); nd.style.color=n>=7?'#22a34f':n>=6?'#f5c800':'#c0392b'; }
+  const ss=document.getElementById('lpStats'), st=G.eu.st||{};
+  if(ss) ss.innerHTML='\u26bd '+(st.gols||0)+'  \ud83c\udd70\ufe0f '+(st.assist||0)+'<br>\ud83d\udd01 '+(st.pCertos||0)+'  \ud83d\udee1\ufe0f '+(st.desarmes||0);
+}
 function render(){
   if(!G)return;
   const s=CONFIG.zoom*(1+0.18*clamp(G.golPunch||0,0,1));
@@ -1485,17 +1606,12 @@ function drawHUD(){
     ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='600 7px Barlow';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('NOTA',nx+5,ny+nh/2+0.5);
     ctx.fillStyle=nv>=7?'#22c55e':nv>=6?'#f5c800':'#fb7185';ctx.font='bold 14px Oswald, Barlow';ctx.textAlign='right';ctx.fillText(nv.toFixed(1),nx+nw-5,ny+nh/2+0.5);
     ctx.textBaseline='alphabetic'; }
-  // minimapa
-  const mw=120, mh=mw*(FH/FW), pad=8, mx=cv.width-mw-pad, my=cv.height-mh-pad;
-  ctx.fillStyle='rgba(8,12,10,.68)'; ctx.fillRect(mx,my,mw,mh);
-  ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=1; ctx.strokeRect(mx,my,mw,mh);
-  ctx.beginPath();ctx.moveTo(mx+mw/2,my);ctx.lineTo(mx+mw/2,my+mh);ctx.stroke();
-  const sx=mw/FW, sy=mh/FH;
-  const dot=(wx,wy,c,r)=>{ctx.beginPath();ctx.arc(mx+wx*sx,my+wy*sy,r,0,7);ctx.fillStyle=c;ctx.fill();};
-  G.jogB.forEach(j=>dot(j.x,j.y,G.cfgB.time.cor,2));
-  G.jogA.forEach(j=>{if(!j.controlado)dot(j.x,j.y,G.cfgA.time.cor,2);});
-  dot(G.eu.x,G.eu.y,'#fff',2.8);
-  dot(G.bola.x,G.bola.y,'#f5c800',2);
+  // minimapa (radar) — paisagem: vai pra coluna lateral; senao canto do campo
+  if(document.body.classList.contains('deitadoLand') && document.getElementById('radarCv')){
+    const _rc=document.getElementById('radarCv'), rx=_rc.getContext('2d');
+    rx.clearRect(0,0,_rc.width,_rc.height); desenharMinimapa(rx,0,0,_rc.width,_rc.height);
+  } else { const mw=120, mh=mw*(FH/FW), pad=8; desenharMinimapa(ctx, cv.width-mw-pad, cv.height-mh-pad, mw, mh); }
+  atualizarPainelLat();
   // barra de força do chute
   if(carregando){
     const t=clamp((performance.now()-chuteCarga)/650,0,1);
@@ -1747,6 +1863,7 @@ function baixarLog(){
 }
 function encerrar(){
   G.rodando=false;G.encerrada=true; somApito(3);
+  _emPartida=false; aplicarDeitado();   // resultado volta em retrato (legível)
   if(G.frameId)cancelAnimationFrame(G.frameId);
   document.getElementById('tempotxt').textContent='FT';
   document.getElementById('btnPlay').style.display='none';
@@ -1845,7 +1962,7 @@ function iniciarPartidaCarreira(dados, onFim){
   setupPanel.style.display='none';
   if(dados.banco||(dados.seu&&dados.seu.papel==='reserva'))iniciarNoBanco();
   G.cam.x=(G.semControle?G.bola.x:G.eu.x); G.cam.y=(G.semControle?G.bola.y:G.eu.y);
-  mostrarEscalacao(()=>{ jogoPanel.style.display='flex'; render(); });
+  mostrarEscalacao(()=>{ jogoPanel.style.display='flex'; _emPartida=true; aplicarDeitado(); render(); });
 }
 function _testarCarreira(){
   iniciarPartidaCarreira({
@@ -1867,11 +1984,21 @@ function iniciarSetup(){
   const _banco=document.getElementById('selBanco'); if(_banco&&_banco.checked)iniciarNoBanco();
   setupPanel.style.display='none';
   G.cam.x=(G.semControle?G.bola.x:G.eu.x); G.cam.y=(G.semControle?G.bola.y:G.eu.y);
-  mostrarEscalacao(()=>{ jogoPanel.style.display='flex'; render(); });
+  mostrarEscalacao(()=>{ jogoPanel.style.display='flex'; _emPartida=true; aplicarDeitado(); render(); });
 }
 function voltarSetup(){
+  _emPartida=false; aplicarDeitado();
   if(G&&G.frameId)cancelAnimationFrame(G.frameId); G=null;
   gA.textContent='0';gB.textContent='0';tempotxt.textContent="0'";
   document.getElementById('posseFill').style.width='50%';
   btnPlay.textContent='▶ Apitar início';btnPlay.style.display='block';
-  btnNova.st
+  btnNova.style.display='none';fimPanel.classList.remove('show');
+  document.getElementById('evLista').innerHTML='';
+  jogoPanel.style.display='none';setupPanel.style.display='block';
+}
+
+popularSelects();
+/* build marker: adapt2d-complete */
+</script>
+</body>
+</html>
