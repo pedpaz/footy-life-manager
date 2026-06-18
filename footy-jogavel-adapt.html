@@ -58,37 +58,46 @@ body.deitado .gol-flash.show{transform:translate(-50%,-50%) rotate(90deg) scale(
 body.deitado .gol-flash.hide{transform:translate(-50%,-50%) rotate(90deg) scale(1.4);}
 body.deitado .sec-label, body.deitado #evLista{ display:none; }
 
-/* ===== PAISAGEM: dashboard 3 colunas (esq=TATICA | campo | dir=HISTORIA) ===== */
-body.deitadoLand #playArea{ --col: clamp(118px, 21vw, 186px); inset:0; width:100vw; height:100vh; }
-body.deitadoLand #playArea .campo-wrap{ position:absolute; top:0; bottom:0; left:var(--col); right:var(--col); width:auto; height:auto; max-width:none; margin:0; display:flex; align-items:center; justify-content:center; }
-body.deitadoLand #playArea canvas#campo{ width:auto; height:auto; max-width:100%; max-height:100%; display:block; margin:auto; }
-/* paineis de fundo */
+/* ===== PAISAGEM: campo em TELA CHEIA, HUD flutuante ===== */
+body.deitadoLand #playArea{ inset:0; width:100vw; height:100vh; }
 #dashL,#dashR{ display:none; }
-body.deitadoLand #dashL, body.deitadoLand #dashR{ display:block; position:fixed; top:0; bottom:0; width:var(--col); background:linear-gradient(#0d1014,#090a0d); z-index:6; box-sizing:border-box; padding:6px 7px; }
-body.deitadoLand #dashL{ left:0; border-right:1px solid #1b2130; }
-body.deitadoLand #dashR{ right:0; border-left:1px solid #1b2130; }
-.dash-tit{ font-family:'Barlow Condensed',sans-serif; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#5a6170; text-align:center; padding:1px 0 6px; }
-/* ===== PLACAR flutuando no topo do campo (centro) ===== */
-body.deitadoLand #playArea .placar{ position:fixed; top:5px; left:50%; transform:translateX(-50%); width:auto; max-width:58vw; margin:0; z-index:11; padding:3px 14px; flex-wrap:nowrap; align-items:center; justify-content:center; gap:4px 8px; background:rgba(10,11,14,.6); border:none; border-radius:8px; }
+body.deitadoLand #dashL, body.deitadoLand #dashR{ display:none; }
+body.deitadoLand #playArea .campo-wrap{ position:fixed; inset:0; width:100vw; height:100vh; max-width:none; margin:0; display:block; }
+body.deitadoLand #playArea canvas#campo{ position:absolute; inset:0; width:100%; height:100%; max-width:none; max-height:none; object-fit:cover; display:block; margin:0; }
+/* placar topo-centro */
+body.deitadoLand #playArea .placar{ position:fixed; top:5px; left:50%; transform:translateX(-50%); width:auto; max-width:52vw; margin:0; z-index:9; padding:2px 12px; flex-wrap:nowrap; align-items:center; justify-content:center; gap:4px 8px; background:rgba(10,11,14,.5); border:none; border-radius:8px; }
 body.deitadoLand #playArea .placar .time-nome, body.deitadoLand #playArea .placar .time-sigla{ display:none; }
-body.deitadoLand #playArea .placar .gols-txt{ font-size:20px; }
+body.deitadoLand #playArea .placar .gols-txt{ font-size:18px; }
 body.deitadoLand #playArea .placar .centro-placar{ min-width:0; }
-/* ===== ESQUERDA: tatica + jogador + radar + pausar ===== */
-body.deitadoLand #btnMent{ position:fixed; left:7px; top:24px; width:calc(var(--col) - 14px); height:auto; min-width:0; padding:7px 4px; z-index:9; justify-content:center; font-size:12px; }
+/* coluna SUP-DIREITA: volume / minimapa / tatica / folego */
+body.deitadoLand #btnSom{ position:fixed; right:8px; top:8px; left:auto; width:26px; height:26px; z-index:11; }
 #radarCv, #meuPainel{ display:none; }
-body.deitadoLand #meuPainel{ display:block; position:fixed; left:7px; top:60px; width:calc(var(--col) - 14px); z-index:9; }
-body.deitadoLand #radarCv{ display:block; position:fixed; left:18px; bottom:52px; width:calc(var(--col) - 36px); height:auto; z-index:9; border:1px solid #1b2130; border-radius:4px; }
-body.deitadoLand #playArea .controles{ position:fixed; left:7px; right:auto; bottom:8px; transform:none; width:calc(var(--col) - 14px); margin:0; z-index:9; display:flex; flex-direction:column; gap:5px; }
-body.deitadoLand #playArea .controles .barra{ width:100%; margin:0; padding:8px 6px; font-size:13px; }
-/* ===== DIREITA: historia em cima + botoes do jogo embaixo ===== */
-body.deitadoLand .sec-label{ position:fixed; right:7px; top:6px; width:calc(var(--col) - 14px); z-index:9; margin:0; text-align:center; }
-body.deitadoLand #evLista{ position:fixed; right:7px; top:24px; bottom:158px; width:calc(var(--col) - 14px); max-height:none; min-height:0; z-index:9; margin:0; background:transparent; border:none; padding:0; }
-body.deitadoLand #playArea .acao{ position:fixed; z-index:10; width:54px; height:54px; font-size:11px; }
-/* cluster escalonado (diamante) no rodape da direita — CORRER/Drible mais acima */
-body.deitadoLand #playArea #btnA{ right:64px; bottom:12px; left:auto; top:auto; }
-body.deitadoLand #playArea #btnB{ right:8px; bottom:42px; left:auto; top:auto; }
-body.deitadoLand #playArea #btnCruz{ right:64px; bottom:74px; left:auto; top:auto; width:46px; height:46px; }
-body.deitadoLand #playArea #btnDrible{ right:8px; bottom:104px; left:auto; top:auto; width:46px; height:46px; }
+body.deitadoLand #radarCv{ display:block; position:fixed; right:8px; top:40px; left:auto; bottom:auto; width:104px; height:auto; z-index:9; border:1px solid rgba(255,255,255,.14); border-radius:5px; background:rgba(8,10,13,.5); }
+body.deitadoLand #btnMent{ position:fixed; right:8px; top:112px; left:auto; width:104px; height:26px; min-width:0; padding:0 6px; z-index:9; justify-content:center; font-size:11px; }
+body.deitadoLand #meuPainel{ display:block; position:fixed; right:8px; top:146px; left:auto; width:104px; z-index:9; background:rgba(8,10,13,.5); border-radius:5px; padding:4px 7px; box-sizing:border-box; }
+body.deitadoLand #meuPainel .lp-lab-nota, body.deitadoLand #meuPainel #lpNota, body.deitadoLand #meuPainel #lpStats{ display:none; }
+/* joystick FIXO visivel no canto INF-ESQUERDO */
+body.deitadoLand #joyZona{ width:46%; height:62%; }
+body.deitadoLand #joyBase{ display:block !important; left:78px !important; top:auto !important; bottom:78px !important; transform:none !important; pointer-events:none; background:rgba(255,255,255,.05); }
+/* botoes de acao no canto INF-DIREITO */
+body.deitadoLand #playArea .acao{ position:fixed; z-index:10; }
+body.deitadoLand #playArea #btnA{ right:92px; bottom:18px; left:auto; top:auto; width:64px; height:64px; font-size:12px; }
+body.deitadoLand #playArea #btnB{ right:18px; bottom:64px; left:auto; top:auto; width:64px; height:64px; font-size:12px; }
+body.deitadoLand #playArea #btnCruz{ right:98px; bottom:94px; left:auto; top:auto; width:52px; height:52px; }
+body.deitadoLand #playArea #btnDrible{ right:18px; bottom:138px; left:auto; top:auto; width:52px; height:52px; }
+/* pausar + velocidade: centro-baixo, pequeno e apagado */
+body.deitadoLand #playArea .controles{ position:fixed; left:50%; right:auto; bottom:8px; transform:translateX(-50%); width:auto; margin:0; z-index:9; display:flex; flex-direction:row; gap:6px; opacity:.6; }
+body.deitadoLand #playArea .controles .barra{ width:auto; flex:0 0 auto; margin:0; padding:6px 16px; font-size:11px; }
+body.deitadoLand #velCtl{ display:flex; position:fixed; left:50%; bottom:40px; transform:translateX(-50%); gap:6px; align-items:center; z-index:9; opacity:.6; background:rgba(8,10,13,.5); border-radius:8px; padding:3px 8px; }
+/* lance a lance: popups discretos sup-esquerda (somem sozinhos) */
+body.deitadoLand .sec-label{ display:none; }
+body.deitadoLand #evLista{ position:fixed; left:8px; top:8px; right:auto; bottom:auto; width:230px; max-width:42vw; max-height:none; min-height:0; z-index:8; margin:0; background:transparent; border:none; padding:0; overflow:visible; pointer-events:none; gap:5px; }
+body.deitadoLand #evLista .evento{ background:rgba(8,10,13,.74); border:1px solid rgba(255,255,255,.1); border-radius:7px; padding:5px 9px; opacity:0; transform:translateX(-12px); transition:opacity .35s, transform .35s; }
+body.deitadoLand #evLista .evento.ev-show{ opacity:1; transform:none; }
+/* controle de velocidade (so aparece na paisagem) */
+#velCtl{ display:none; align-items:center; gap:6px; }
+#velCtl button{ width:28px; height:24px; border-radius:6px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:15px; line-height:1; cursor:pointer; }
+#velLab{ font:700 12px 'Oswald',sans-serif; color:#fff; min-width:26px; text-align:center; }
 .lp-lab{ font-family:'Barlow Condensed',sans-serif; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:#5a6170; }
 .lp-bar{ height:7px; background:#1a1f29; border-radius:4px; overflow:hidden; margin-top:3px; }
 .lp-fill{ height:100%; width:100%; background:#22a34f; }
@@ -232,13 +241,14 @@ select{flex:1;background:#1a1e26;border:1px solid var(--borda);color:var(--texto
     <button class="barra btn-s" id="btnNova" style="display:none;" onclick="voltarSetup()">↺ Nova</button>
     <button class="barra btn-s" id="btnLog" style="display:none;margin-top:6px;background:#10131a;border:1px solid #2a4a6a;color:#9cc4f0" onclick="baixarLog()">📥 Baixar log do jogo</button>
   </div>
+  <div id="velCtl"><button id="btnVelM" onclick="mudarVel(-1)">«</button><span id="velLab">1×</span><button id="btnVelP" onclick="mudarVel(1)">»</button></div>
   <div id="dashL"><div class="dash-tit">Tática</div></div>
   <div id="dashR"></div>
   <canvas id="radarCv" width="132" height="85"></canvas>
   <div id="meuPainel">
     <div class="lp-lab">Fôlego</div>
     <div class="lp-bar"><div id="lpFol" class="lp-fill"></div></div>
-    <div class="lp-lab" style="margin-top:8px">Nota ao vivo</div>
+    <div class="lp-lab lp-lab-nota" style="margin-top:8px">Nota ao vivo</div>
     <div id="lpNota" class="lp-nota">—</div>
     <div id="lpStats" class="lp-stats"></div>
   </div>
@@ -454,9 +464,14 @@ function wrapLocal(clientX,clientY){
 }
 joyZona.addEventListener('pointerdown',e=>{
   joyPid=e.pointerId; joyZona.setPointerCapture(joyPid);
-  const p=wrapLocal(e.clientX,e.clientY);
-  joy.active=true; joy.ox=p.x; joy.oy=p.y;
-  joyBase.style.display='block'; joyBase.style.left=joy.ox+'px'; joyBase.style.top=joy.oy+'px';
+  if(document.body.classList.contains('deitadoLand')){ // joystick FIXO: origem = centro da base visivel no canto
+    const br=joyBase.getBoundingClientRect(); const c=wrapLocal(br.left+br.width/2, br.top+br.height/2);
+    joy.active=true; joy.ox=c.x; joy.oy=c.y;
+  } else {
+    const p=wrapLocal(e.clientX,e.clientY);
+    joy.active=true; joy.ox=p.x; joy.oy=p.y;
+    joyBase.style.display='block'; joyBase.style.left=joy.ox+'px'; joyBase.style.top=joy.oy+'px';
+  }
   joyKnob.style.left='50%'; joyKnob.style.top='50%';
 });
 joyZona.addEventListener('pointermove',e=>{
@@ -468,7 +483,7 @@ joyZona.addEventListener('pointermove',e=>{
   joy.nx=dx/max; joy.ny=dy/max;
   joyKnob.style.left=(50+dx/96*100)+'%'; joyKnob.style.top=(50+dy/96*100)+'%';
 });
-function soltarJoy(e){ if(e.pointerId!==joyPid)return; joy.active=false; joy.nx=0; joy.ny=0; joyBase.style.display='none'; joyPid=null; }
+function soltarJoy(e){ if(e.pointerId!==joyPid)return; joy.active=false; joy.nx=0; joy.ny=0; joyKnob.style.left='50%'; joyKnob.style.top='50%'; if(!document.body.classList.contains('deitadoLand'))joyBase.style.display='none'; joyPid=null; }
 joyZona.addEventListener('pointerup',soltarJoy);
 joyZona.addEventListener('pointercancel',soltarJoy);
 
@@ -1355,6 +1370,7 @@ function loop(ts){
   G.frameId=requestAnimationFrame(loop);
   if(!lastTs)lastTs=ts;
   let dt=(ts-lastTs)/1000; lastTs=ts;
+  if(G.speed&&G.speed!==1)dt*=G.speed;   // controle de velocidade (paisagem)
   if(dt>0.05)dt=0.05;
   G.frame++;
   if(carregando && temBola() && performance.now()-chuteCarga>720) dispararChute(); // garante o chute
@@ -1784,7 +1800,13 @@ function addEvento(min,ico,txt,cls=''){
   const div=document.createElement('div'); div.className='evento '+cls;
   div.innerHTML=`<span class="ev-min">${min}'</span><span class="ev-ico">${ico}</span><span class="ev-txt">${txt}</span>`;
   lista.insertBefore(div,lista.firstChild);
+  if(document.body.classList.contains('deitadoLand')){ // paisagem: popup discreto que aparece e some
+    requestAnimationFrame(()=>div.classList.add('ev-show'));
+    setTimeout(()=>{ div.classList.remove('ev-show'); setTimeout(()=>{ if(div.parentNode)div.remove(); },380); }, 3800);
+    while(lista.children.length>3 && lista.lastChild) lista.lastChild.remove();
+  }
 }
+function mudarVel(d){ if(!G)return; const opc=[0.5,1,2,3]; let i=opc.indexOf(G.speed||1); if(i<0)i=1; i=Math.max(0,Math.min(opc.length-1,i+d)); G.speed=opc[i]; const l=document.getElementById('velLab'); if(l)l.textContent=G.speed+'\u00d7'; }
 
 /* ─── CONTROLES DE JOGO ──────────────────────────────────────────── */
 function togglePausa(){
