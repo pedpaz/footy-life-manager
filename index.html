@@ -4,6 +4,13 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#0B1410"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Footy Life"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" type="image/png" href="icon-192.png"/>
 <title>Footy Life Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -45,7 +52,7 @@
 </script>
 
 <div id="root">
-  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.121 Tela deitada redesenhada (campo fullscreen + joystick fixo + velocidade + lances popup) + motor embutido (single-file via srcDoc) + correcao do start (polling no lugar do evento load — o 2D nao iniciava e caia direto no resultado). Rede de seguranca de 12s mantida. PartidaInterativa dormente. · pack</div></div>
+  <div id="boot"><div class="ball">⚽</div><div class="msg">Carregando o jogo…</div><div class="v">v9.122 PWA: instalavel na tela inicial + atualizacao automatica (service worker network-first). Tela deitada redesenhada (campo fullscreen + joystick fixo + velocidade + lances popup) + motor embutido (single-file via srcDoc) + correcao do start (polling no lugar do evento load — o 2D nao iniciava e caia direto no resultado). Rede de seguranca de 12s mantida. PartidaInterativa dormente. · pack</div></div>
 </div>
 
 <script type="text/plain" id="bmsrc">
@@ -4621,7 +4628,7 @@ function entrarBaseV(vida,nome,forca,pacote){
   const base={...vida,fase:"base",clube:nome,clubeForca:forca,tier:serieA?"serieA":"base",categoria:cat,salarioMes:bolsa,dinheiro:(vida.dinheiro||0)+(luvas||0),sinergia:pacote?pacote.sinBase:32,anosNoClube:0,capitao:false,faixa:"nenhum",clima:55,elenco:gerarVestiario(forca),torcida:48,reputacao:clamp(vida.reputacao+(pacote?pacote.repBonus:5),0,100),talentoDev:clamp((vida.talentoDev||1)*(1+(pacote?pacote.dev:0)),0.8,1.4),moradia:aloj?"quarto":(vida.moradia||"familia"),log:[...vida.log,{m:msg}]};
   base.rival=rivalDe(base);base.calendario=gerarCalendarioV(base);base.artilharia=gerarArtilhariaV(base);base.liga=gerarLigaV(base);base.elenco=gerarElencoBase(base.categoria,base.ovr);base.moradia=aloj?"alojamento":(vida.moradia||"familia");base.alojCT=!!aloj;base.escolaCT=!!escola;return base;
 }
-const VERSAO="v9.121 Tela deitada redesenhada (campo fullscreen + joystick fixo + velocidade + lances popup) + motor embutido (single-file via srcDoc) + correcao do start (polling no lugar do evento load — o 2D nao iniciava e caia direto no resultado). Rede de seguranca de 12s mantida. PartidaInterativa dormente.";
+const VERSAO="v9.122 PWA: instalavel na tela inicial + atualizacao automatica (service worker network-first). Tela deitada redesenhada (campo fullscreen + joystick fixo + velocidade + lances popup) + motor embutido (single-file via srcDoc) + correcao do start (polling no lugar do evento load — o 2D nao iniciava e caia direto no resultado). Rede de seguranca de 12s mantida. PartidaInterativa dormente.";
 
 /* ===== IMPRENSA FICTÍCIA ===== */
 // Sistema de manchetes movido para data/manchetes.js (Sprint 4.5)
@@ -9259,6 +9266,27 @@ const modalBox={background:"linear-gradient(180deg,#1a1d23,#131519)",border:"1px
     ]);
     createRoot(document.getElementById("root")).render(React.createElement(App));
   } catch (e) { fail(e); }
+</script>
+
+<button id="flmInstall" onclick="flmInstallNow()" aria-label="Instalar app" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:99999;align-items:center;gap:8px;padding:11px 18px;border:none;border-radius:30px;background:linear-gradient(135deg,#C9A24B,#E2C485);color:#0B1410;font-family:Oswald,sans-serif;font-weight:700;font-size:14px;letter-spacing:.04em;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer;">📲 Instalar app</button>
+<script>
+(function(){
+  // Service Worker: atualizacao automatica FORCADA (network-first no sw.js)
+  if('serviceWorker' in navigator){
+    var hadCtrl = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(!hadCtrl) return;
+      if(window.__flmReloaded) return; window.__flmReloaded=true;
+      location.reload();
+    });
+  }
+  // Botao "Instalar" (Android/Chrome dispara beforeinstallprompt)
+  var dp=null;
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); dp=e; var b=document.getElementById('flmInstall'); if(b)b.style.display='flex'; });
+  window.addEventListener('appinstalled', function(){ var b=document.getElementById('flmInstall'); if(b)b.style.display='none'; });
+  window.flmInstallNow=function(){ if(!dp)return; dp.prompt(); dp.userChoice.finally(function(){ dp=null; var b=document.getElementById('flmInstall'); if(b)b.style.display='none'; }); };
+})();
 </script>
 </body>
 </html>
