@@ -63,7 +63,7 @@ body.deitadoLand #playArea{ inset:0; width:100vw; height:100vh; }
 #dashL,#dashR{ display:none; }
 body.deitadoLand #dashL, body.deitadoLand #dashR{ display:none; }
 body.deitadoLand #playArea .campo-wrap{ position:fixed; inset:0; width:100vw; height:100vh; max-width:none; margin:0; display:block; }
-body.deitadoLand #playArea canvas#campo{ position:absolute; inset:0; width:100%; height:100%; max-width:none; max-height:none; object-fit:cover; display:block; margin:0; }
+body.deitadoLand #playArea canvas#campo{ position:absolute; inset:0; width:100%; height:100%; max-width:none; max-height:none; display:block; margin:0; }
 /* placar topo-centro */
 body.deitadoLand #playArea .placar{ position:fixed; top:5px; left:50%; transform:translateX(-50%); width:auto; max-width:52vw; margin:0; z-index:9; padding:2px 12px; flex-wrap:nowrap; align-items:center; justify-content:center; gap:4px 8px; background:rgba(10,11,14,.5); border:none; border-radius:8px; }
 body.deitadoLand #playArea .placar .time-nome, body.deitadoLand #playArea .placar .time-sigla{ display:none; }
@@ -72,13 +72,13 @@ body.deitadoLand #playArea .placar .centro-placar{ min-width:0; }
 /* coluna SUP-DIREITA: volume / minimapa / tatica / folego */
 body.deitadoLand #btnSom{ position:fixed; right:8px; top:8px; left:auto; width:26px; height:26px; z-index:11; }
 #radarCv, #meuPainel{ display:none; }
-body.deitadoLand #radarCv{ display:block; position:fixed; right:8px; top:40px; left:auto; bottom:auto; width:104px; height:auto; z-index:9; border:1px solid rgba(255,255,255,.14); border-radius:5px; background:rgba(8,10,13,.5); }
-body.deitadoLand #btnMent{ position:fixed; right:8px; top:112px; left:auto; width:104px; height:26px; min-width:0; padding:0 6px; z-index:9; justify-content:center; font-size:11px; }
-body.deitadoLand #meuPainel{ display:block; position:fixed; right:8px; top:146px; left:auto; width:104px; z-index:9; background:rgba(8,10,13,.5); border-radius:5px; padding:4px 7px; box-sizing:border-box; }
+body.deitadoLand #radarCv{ display:block; position:fixed; left:176px; right:auto; top:auto; bottom:14px; width:74px; height:auto; z-index:9; border:1px solid rgba(255,255,255,.14); border-radius:5px; background:rgba(8,10,13,.5); }
+body.deitadoLand #btnMent{ position:fixed; right:42px; top:8px; left:auto; width:auto; height:28px; min-width:0; padding:0 9px; z-index:11; justify-content:center; font-size:11px; }
+body.deitadoLand #meuPainel{ display:none; }
 body.deitadoLand #meuPainel .lp-lab-nota, body.deitadoLand #meuPainel #lpNota, body.deitadoLand #meuPainel #lpStats{ display:none; }
 /* joystick FIXO visivel no canto INF-ESQUERDO */
 body.deitadoLand #joyZona{ width:46%; height:62%; }
-body.deitadoLand #joyBase{ display:block !important; left:78px !important; top:auto !important; bottom:78px !important; transform:none !important; pointer-events:none; background:rgba(255,255,255,.05); }
+body.deitadoLand #joyBase{ display:block !important; left:74px !important; top:auto !important; bottom:10px !important; transform:none !important; pointer-events:none; background:rgba(255,255,255,.05); }
 /* botoes de acao no canto INF-DIREITO */
 body.deitadoLand #playArea .acao{ position:fixed; z-index:10; }
 body.deitadoLand #playArea #btnA{ right:92px; bottom:18px; left:auto; top:auto; width:64px; height:64px; font-size:12px; }
@@ -86,9 +86,10 @@ body.deitadoLand #playArea #btnB{ right:18px; bottom:64px; left:auto; top:auto; 
 body.deitadoLand #playArea #btnCruz{ right:98px; bottom:94px; left:auto; top:auto; width:52px; height:52px; }
 body.deitadoLand #playArea #btnDrible{ right:18px; bottom:138px; left:auto; top:auto; width:52px; height:52px; }
 /* pausar + velocidade: centro-baixo, pequeno e apagado */
-body.deitadoLand #playArea .controles{ position:fixed; left:50%; right:auto; bottom:8px; transform:translateX(-50%); width:auto; margin:0; z-index:9; display:flex; flex-direction:row; gap:6px; opacity:.6; }
+body.deitadoLand #playArea .controles{ position:fixed; left:50%; right:auto; bottom:10px; transform:none; margin-left:6px; z-index:9; display:flex; flex-direction:row; gap:6px; opacity:1; }
+body.deitadoLand #btnPlay{ background:#37c98a; color:#06281b; border:none; border-top:1px solid #8effce; border-bottom:3px solid #18794f; font-weight:600; }
 body.deitadoLand #playArea .controles .barra{ width:auto; flex:0 0 auto; margin:0; padding:6px 16px; font-size:11px; }
-body.deitadoLand #velCtl{ display:flex; position:fixed; left:50%; bottom:40px; transform:translateX(-50%); gap:6px; align-items:center; z-index:9; opacity:.6; background:rgba(8,10,13,.5); border-radius:8px; padding:3px 8px; }
+body.deitadoLand #velCtl{ display:flex; position:fixed; left:50%; bottom:10px; transform:translateX(-100%); margin-left:-6px; gap:6px; align-items:center; z-index:9; opacity:1; background:rgba(8,10,13,.5); border-radius:8px; padding:5px 8px; }
 /* lance a lance: popups discretos sup-esquerda (somem sozinhos) */
 body.deitadoLand .sec-label{ display:none; }
 body.deitadoLand #evLista{ position:fixed; left:8px; top:8px; right:auto; bottom:auto; width:230px; max-width:42vw; max-height:none; min-height:0; z-index:8; margin:0; background:transparent; border:none; padding:0; overflow:visible; pointer-events:none; gap:5px; }
@@ -98,6 +99,12 @@ body.deitadoLand #evLista .evento.ev-show{ opacity:1; transform:none; }
 #velCtl{ display:none; align-items:center; gap:6px; }
 #velCtl button{ width:28px; height:24px; border-radius:6px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:15px; line-height:1; cursor:pointer; }
 #velLab{ font:700 12px 'Oswald',sans-serif; color:#fff; min-width:26px; text-align:center; }
+/* aviso 'gire o celular' (partida deitada) */
+#girarAviso{ display:none; position:fixed; inset:0; z-index:80; background:#0a0b0e; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:30px; }
+#girarAviso .ga-ic{ font-size:52px; animation:gaSpin 2.4s ease-in-out infinite; }
+#girarAviso .ga-tit{ font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; color:#E2C485; letter-spacing:.04em; text-transform:uppercase; }
+#girarAviso .ga-sub{ font-family:'Barlow',sans-serif; font-size:14px; color:#9aa0aa; line-height:1.5; }
+@keyframes gaSpin{ 0%,100%{transform:rotate(0)} 50%{transform:rotate(-90deg)} }
 .lp-lab{ font-family:'Barlow Condensed',sans-serif; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:#5a6170; }
 .lp-bar{ height:7px; background:#1a1f29; border-radius:4px; overflow:hidden; margin-top:3px; }
 .lp-fill{ height:100%; width:100%; background:#22a34f; }
@@ -255,6 +262,7 @@ select{flex:1;background:#1a1e26;border:1px solid var(--borda);color:var(--texto
   <div class="sec-label">Lance a lance</div>
   <div class="eventos" id="evLista"></div>
   </div><!-- /#playArea -->
+  <div id="girarAviso"><div class="ga-ic">🔄📱</div><div class="ga-tit">Gire o celular</div><div class="ga-sub">A partida é jogada na horizontal.<br/>Vire o aparelho de lado pra continuar.</div></div>
 
   <div class="dica" id="dica">Arraste no canto esquerdo pra mover · <b>A</b> toque = passe/pedir/roubar, <b>segura A</b> = lançamento · <b>B</b> segura pra chute mais forte / correr · <b>L</b> lançamento (teclado)</div>
 
@@ -386,7 +394,19 @@ function layout(form,team){
   });
 }
 
+// ── Segundo uniforme: se as cores dos times batem, veste o adversário (B) de cor contrastante ──
+function _hex2rgb(h){ h=(h||'').replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join(''); const n=parseInt(h||'0',16)||0; return [(n>>16)&255,(n>>8)&255,n&255]; }
+function _lumCor(h){ const c=_hex2rgb(h); return (0.299*c[0]+0.587*c[1]+0.114*c[2])/255; }
+function _distCor(a,b){ const x=_hex2rgb(a),y=_hex2rgb(b); return Math.sqrt(Math.pow(x[0]-y[0],2)+Math.pow(x[1]-y[1],2)+Math.pow(x[2]-y[2],2)); }
+function resolverUniforme(cfgA,cfgB){ try{
+  const cA=(cfgA&&cfgA.time&&cfgA.time.cor)||'#0F3B2E', cB=(cfgB&&cfgB.time&&cfgB.time.cor)||'#C8102E';
+  if(_distCor(cA,cB)>95) return;                        // cores já bem diferentes
+  let alt = _lumCor(cA)<0.5 ? '#ECECEC' : '#16233A';    // mandante escuro → visitante claro; senão visitante escuro
+  if(_distCor(cA,alt)<=95) alt = _lumCor(cA)<0.5 ? '#E8C53A' : '#ECECEC';
+  cfgB.time.cor = alt; cfgB.time._uniformeAlt = true;
+}catch(_e){} }
 function criarEstado(cfgA,cfgB,seuPos,dif){
+  resolverUniforme(cfgA,cfgB);
   const jogA=gerarElenco(cfgA.time.s,cfgA.form);
   const jogB=gerarElenco(cfgB.time.s,cfgB.form);
   const pA=layout(cfgA.form,'A'), pB=layout(cfgB.form,'B');
@@ -488,16 +508,22 @@ joyZona.addEventListener('pointerup',soltarJoy);
 joyZona.addEventListener('pointercancel',soltarJoy);
 
 // ─── Modo deitado: força paisagem enquanto o campo está em jogo ─────
-let _emPartida=false;
+let _emPartida=false, _giroPausou=false;
 function aplicarDeitado(){
   const w=window.innerWidth, h=window.innerHeight;
-  let rot=false, land=false;
-  if(_emPartida){
-    if(h>w) rot=true;   // retrato → gira 90° (paisagem forçada)
-    else land=true;     // paisagem (qualquer tamanho) → layout deitado nativo, sem girar
-  }
-  document.body.classList.toggle('deitado', rot);
+  const precisaGirar = _emPartida && h>w;   // partida + celular em pé → pede pra girar (sem rotação forçada feia)
+  const land = _emPartida && w>=h;          // paisagem de verdade → partida deitada em tela cheia
+  const aviso=document.getElementById('girarAviso'); if(aviso) aviso.style.display = precisaGirar ? 'flex' : 'none';
+  document.body.classList.remove('deitado');
   document.body.classList.toggle('deitadoLand', land);
+  if(precisaGirar){ if(G && G.rodando){ G.rodando=false; _giroPausou=true; } }   // pausa enquanto está em pé
+  else if(_giroPausou && land){ _giroPausou=false; if(G && G.iniciado && !G.encerrada){ G.rodando=true; lastTs=0; requestAnimationFrame(loop); } }   // girou de volta → retoma
+  // campo preenche 100% da tela na paisagem: backbuffer no aspecto da tela (sem distorcer, sem barra preta)
+  if(cv){
+    if(land){ const asp=clamp(w/h,1.25,2.6), nw=Math.round(372*asp); if(cv.width!==nw){ cv.width=nw; cv.height=372; } }
+    else if(cv.width!==560){ cv.width=560; cv.height=372; }
+    try{ if(G&&G.eu&&!G.rodando) render(); }catch(_e){}
+  }
 }
 ['resize','orientationchange'].forEach(ev=>window.addEventListener(ev,aplicarDeitado));
 
@@ -1615,7 +1641,7 @@ function notaAoVivo(){ return notaJogador(G.eu,true); }
 function drawHUD(){
   ctx.setTransform(1,0,0,1,0,0);
   // nota ao vivo (canto superior direito)
-  { const nv=notaAoVivo(), nw=58,nx=cv.width-nw-8,ny=8,nh=19;
+  { const _ld=document.body.classList.contains('deitadoLand'); const nv=notaAoVivo(), nw=58,nh=19,ny=8,nx=_ld?116:(cv.width-nw-8);
     ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(nx,ny,nw,nh);
     ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=1;ctx.strokeRect(nx,ny,nw,nh);
     ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='600 7px Barlow';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('NOTA',nx+5,ny+nh/2+0.5);
@@ -1630,7 +1656,7 @@ function drawHUD(){
   // barra de força do chute
   if(carregando){
     const t=clamp((performance.now()-chuteCarga)/650,0,1);
-    const bw=92,bh=8,bx=(cv.width-bw)/2,by=12;
+    const bw=92,bh=8,bx=(cv.width-bw)/2,by=Math.round(cv.height*0.5-52);
     ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(bx-2,by-2,bw+4,bh+4);
     ctx.fillStyle='#f5c800';ctx.fillRect(bx,by,bw*t,bh);
     ctx.strokeStyle='rgba(255,255,255,.6)';ctx.strokeRect(bx,by,bw,bh);
@@ -1894,7 +1920,7 @@ function encerrar(){
   const totP=(G.posse.A+G.posse.B)||1, pA=Math.round(G.posse.A/totP*100);
   const nota=calcularNota(), e=G.euStats;
   let _min=90; if(G.voceEntrou&&G.entraMin)_min=Math.max(1,90-G.entraMin); if(G.voceSaiu||G.voceExpulso)_min=G.euSaiuMin||_min; if(G.noBanco&&!G.voceEntrou)_min=0;
-  if(G._onFim){ try{ G._onFim({golsA:a,golsB:b,nota,euStats:e,venceu:a>b,empate:a===b,lesao:!!G.euLesao,expulso:!!G.voceExpulso,saiu:!!G.voceSaiu,minutos:_min}); }catch(_e){} }
+  if(G._onFim){ try{ G._onFim({golsA:a,golsB:b,nota,euStats:e,st:Object.assign({},G.eu.st),pos:G.eu.pos,venceu:a>b,empate:a===b,lesao:!!G.euLesao,expulso:!!G.voceExpulso,saiu:!!G.voceSaiu,minutos:_min}); }catch(_e){} }
   const resd=a>b?`Vitória do ${G.cfgA.time.name}`:b>a?`Vitória do ${G.cfgB.time.name}`:'Empate';
   document.getElementById('fimPlacar').textContent=`${a} – ${b}`;
   const corNota = nota>=7?'#22a34f':nota>=6?'#f5c800':'#c0392b';
@@ -1918,6 +1944,7 @@ function encerrar(){
   try{ const _cv=document.getElementById('fimMapa'); if(_cv){ _cv.style.display='block'; desenharMapaFim(); } }catch(_e){}
   const _bl=document.getElementById('btnLog'); if(_bl)_bl.style.display='block';
   document.getElementById('fimPanel').classList.add('show');
+  try{ const _bn=document.getElementById('btnNova'); if(_bn) _bn.style.display=G._onFim?'none':''; }catch(_e){}
 }
 function linhaStat(va,l,vb){
   return `<tr><td style="text-align:left;color:#cbd0d8;font-family:'Oswald';font-weight:600">${va}</td>`+
@@ -1943,19 +1970,20 @@ function mostrarEscalacao(onStart){
      <div style="flex:1;height:7px;background:#1a1f28;border-radius:4px;overflow:hidden"><div style="width:${clamp(v,0,99)}%;height:100%;background:${cor}"></div></div>
      <span style="width:22px;text-align:right;font:700 12px Oswald,sans-serif;color:#e6e9ee">${v}</span></div>`;
   const cardJog=j=>{ const ehEu=j.controlado;
-    return `<div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:${ehEu?'#16210f':'#12141a'};border:1px solid ${ehEu?'#C9A24B':'#20222a'}">
-      <div style="width:24px;height:24px;border-radius:50%;background:${A.cor};color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px Oswald,sans-serif;flex-shrink:0">${j.num}</div>
+    return `<div style="display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;background:${ehEu?'#16210f':'#12141a'};border:1px solid ${ehEu?'#C9A24B':'#20222a'}">
+      <div style="width:22px;height:22px;border-radius:50%;background:${A.cor};color:#fff;display:flex;align-items:center;justify-content:center;font:700 10px Oswald,sans-serif;flex-shrink:0">${j.num}</div>
       <div style="flex:1;min-width:0">
-        <div style="font:600 13px Oswald,sans-serif;color:${ehEu?'#E2C485':'#e6e9ee'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.nome}${ehEu?' <span style="font-size:10px;color:#C9A24B">★ VOCÊ</span>':''}</div>
-        <div style="font:500 10px Barlow Condensed,sans-serif;color:#7a8190;text-transform:uppercase;letter-spacing:.04em">${posNome[j.pos]||j.pos}</div>
+        <div style="font:600 12px Oswald,sans-serif;color:${ehEu?'#E2C485':'#e6e9ee'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.nome}${ehEu?' <span style="font-size:9px;color:#C9A24B">\u2605</span>':''}</div>
+        <div style="font:500 9px Barlow Condensed,sans-serif;color:#7a8190;text-transform:uppercase;letter-spacing:.04em">${posNome[j.pos]||j.pos}</div>
       </div>
-      <div style="font:700 16px Oswald,sans-serif;color:${j.ovr>=80?'#22a34f':j.ovr>=70?'#f5c800':'#9aa0aa'}">${j.ovr}</div>
+      <div style="font:700 14px Oswald,sans-serif;color:${j.ovr>=80?'#22a34f':j.ovr>=70?'#f5c800':'#9aa0aa'}">${j.ovr}</div>
     </div>`; };
   const wrap=document.createElement('div'); wrap.id='escalacaoPanel';
   wrap.style.cssText='position:fixed;inset:0;z-index:50;background:#0a0b0e;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:16px 12px 24px;gap:11px;font-family:Barlow,sans-serif;';
   wrap.innerHTML=`
     <div style="font:700 19px Oswald,sans-serif;color:#fff;text-transform:uppercase;letter-spacing:.03em;text-align:center">${A.name} <span style="color:#5a6170;font-size:13px">${G.cfgA.form}</span></div>
     <div style="font:500 12px Barlow Condensed,sans-serif;color:#8a909a;text-transform:uppercase;letter-spacing:.1em;margin-top:-5px">vs ${B.name} · ${G.cfgB.form}</div>
+    ${G._tecnico?'<div style="font:500 11px Barlow Condensed,sans-serif;color:#9aa0aa;margin-top:-3px">\ud83e\uddd1\u200d\ud83c\udfeb Técnico: <b style="color:#cbd0d8">'+G._tecnico+'</b></div>':''}
     ${G.noBanco?'<div style="width:100%;max-width:440px;background:#1a1408;border:1px solid #C9A24B;border-radius:9px;padding:8px 11px;color:#E2C485;font:600 12px Barlow,sans-serif;text-align:center">🪑 Você começa no banco — o técnico decide quando te colocar</div>':''}
     <div style="width:100%;max-width:440px;background:#10131a;border:1px solid #2a2410;border-radius:12px;padding:12px">
       <div style="font:600 11px Barlow Condensed,sans-serif;color:#C9A24B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px">Seus atributos — ${posNome[eu.pos]||eu.pos}</div>
@@ -1963,10 +1991,13 @@ function mostrarEscalacao(onStart){
       <div style="text-align:right;margin-top:4px;font:700 13px Oswald,sans-serif;color:#E2C485">OVR ${eu.ovr}</div>
     </div>
     <div style="width:100%;max-width:440px;font:600 11px Barlow Condensed,sans-serif;color:#7a8190;text-transform:uppercase;letter-spacing:.1em">Escalação (XI)</div>
-    <div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:6px" id="_xiList"></div>
+    <div style="width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:6px" id="_xiList"></div>
+    <div style="width:100%;max-width:440px;font:600 11px Barlow Condensed,sans-serif;color:#7a8190;text-transform:uppercase;letter-spacing:.1em;margin-top:2px">Reservas (banco)</div>
+    <div style="width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:6px" id="_benchList"></div>
     <button id="_btnEntrar" style="width:100%;max-width:440px;background:linear-gradient(180deg,#2a2410,#1a1408);border:1px solid #C9A24B;color:#E2C485;font:700 16px Oswald,sans-serif;padding:14px;border-radius:10px;cursor:pointer;margin-top:4px">▶ Entrar em campo</button>`;
   document.body.appendChild(wrap);
   const list=wrap.querySelector('#_xiList'); if(list)list.innerHTML=xi.map(cardJog).join('');
+  const bench=wrap.querySelector('#_benchList'); if(bench)bench.innerHTML=(G.bancoA||[]).map(cardJog).join('');
   const bt=wrap.querySelector('#_btnEntrar'); if(bt)bt.addEventListener('click',()=>{ wrap.remove(); if(onStart)onStart(); });
 }
 function iniciarPartidaCarreira(dados, onFim){
@@ -1975,9 +2006,9 @@ function iniciarPartidaCarreira(dados, onFim){
   // injeta SEU jogador real (atributos da carreira)
   if(sa.at){ G.eu.at={...sa.at}; G.eu.ovr = sa.ovr || ovrDe(sa.at, G.eu.pos); }
   if(sa.nome) G.eu.nome = sa.nome;
-  G._onFim = onFim || null;
+  G._onFim = onFim || null; G._tecnico = dados.tecnico || null;
   escudoA.textContent=(sa.time.short||'SEU').slice(0,3); escudoA.style.background=sa.time.cor||'#0F3B2E';
-  escudoB.textContent=(ad.time.short||'ADV').slice(0,3); escudoB.style.background=ad.time.cor||'#C8102E';
+  escudoB.textContent=(ad.time.short||'ADV').slice(0,3); escudoB.style.background=(G.cfgB&&G.cfgB.time.cor)||ad.time.cor||'#C8102E';
   nomeA.textContent=sa.time.name||'Seu time'; siglaA.textContent=(sa.form||'4-3-3')+' · você: '+(sa.pos||'ATA');
   nomeB.textContent=ad.time.name||'Adversário'; siglaB.textContent=ad.form||'4-4-2';
   setupPanel.style.display='none';
