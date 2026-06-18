@@ -478,9 +478,8 @@ function aplicarDeitado(){
   const w=window.innerWidth, h=window.innerHeight;
   let rot=false, land=false;
   if(_emPartida){
-    if(h>w) rot=true;            // retrato → gira 90° (paisagem forçada)
-    else if(h<=620) land=true;  // celular deitado (paisagem curta) → tela cheia sem girar
-    // desktop (paisagem alta) → layout normal
+    if(h>w) rot=true;   // retrato → gira 90° (paisagem forçada)
+    else land=true;     // paisagem (qualquer tamanho) → layout deitado nativo, sem girar
   }
   document.body.classList.toggle('deitado', rot);
   document.body.classList.toggle('deitadoLand', land);
