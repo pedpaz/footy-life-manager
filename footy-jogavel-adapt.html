@@ -462,7 +462,7 @@ function inputVetor(){
   if(x||y){const[nx,ny]=norm(x,y);return[nx,ny];}
   return [0,0];
 }
-function sprintAtivo(){return G && (G.sprint || keys['ShiftLeft']||keys['ShiftRight']);}
+function sprintAtivo(){return G && (G.sprint || (typeof joy!=='undefined'&&joy&&joy.active&&Math.hypot(joy.nx||0,joy.ny||0)>=0.9) || keys['ShiftLeft']||keys['ShiftRight']);}
 
 // Joystick (pointer)
 const joyZona=document.getElementById('joyZona');
@@ -2001,6 +2001,11 @@ function mostrarEscalacao(onStart){
   const bt=wrap.querySelector('#_btnEntrar'); if(bt)bt.addEventListener('click',()=>{ wrap.remove(); if(onStart)onStart(); });
 }
 function iniciarPartidaCarreira(dados, onFim){
+  // RESET: se o iframe foi reaproveitado, limpa estado/UI do jogo anterior
+  try{ if(typeof G!=='undefined'&&G&&G.frameId)cancelAnimationFrame(G.frameId); }catch(_e){}
+  try{ _emPartida=false; _giroPausou=false; lastTs=0; carregando=false; chuteCarga=0; if(typeof joy!=='undefined'&&joy){joy.active=false;joy.nx=0;joy.ny=0;} }catch(_e){}
+  try{ const _fp=document.getElementById('fimPanel'); if(_fp)_fp.classList.remove('show'); }catch(_e){}
+  try{ document.body.classList.remove('deitado','deitadoLand'); const _ga=document.getElementById('girarAviso'); if(_ga)_ga.style.display='none'; }catch(_e){}
   const sa=dados.seu, ad=dados.adv;
   G=criarEstado({time:sa.time, form:sa.form||'4-3-3'}, {time:ad.time, form:ad.form||'4-4-2'}, sa.pos||'ATA', dados.dif||1);
   // injeta SEU jogador real (atributos da carreira)
